@@ -26,19 +26,25 @@ class LoginActivity : AppCompatActivity() {
     private val googleSignInLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
+        android.util.Log.d("LoginActivity", "Google sign-in result code: ${result.resultCode}")
         if (result.resultCode == RESULT_OK) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             try {
                 val account = task.getResult(ApiException::class.java)
                 val idToken = account?.idToken
+                android.util.Log.d("LoginActivity", "idToken null: ${idToken == null}")
                 if (idToken != null) {
                     viewModel.signInWithGoogle(idToken)
                 } else {
-                    Toast.makeText(this, "Google sign in failed: ID token is null", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Google sign in failed: ID token is null.\nPastikan SHA-1 terdaftar di Firebase Console.", Toast.LENGTH_LONG).show()
                 }
             } catch (e: ApiException) {
-                Toast.makeText(this, "Google sign in failed: ${e.statusCode}", Toast.LENGTH_SHORT).show()
+                android.util.Log.e("LoginActivity", "ApiException statusCode: ${e.statusCode}", e)
+                Toast.makeText(this, "Google sign in error code: ${e.statusCode}", Toast.LENGTH_LONG).show()
             }
+        } else {
+            android.util.Log.w("LoginActivity", "Google sign-in cancelled or failed. resultCode=${result.resultCode}")
+            Toast.makeText(this, "Login dibatalkan (code: ${result.resultCode})", Toast.LENGTH_SHORT).show()
         }
     }
 
