@@ -15,6 +15,7 @@ import com.aether.cloud.util.Resource
 import com.aether.cloud.viewmodel.AuthViewModel
 import com.aether.cloud.viewmodel.AuthViewModelFactory
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.common.api.ApiException
 import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
@@ -28,10 +29,15 @@ class LoginActivity : AppCompatActivity() {
         if (result.resultCode == RESULT_OK) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             try {
-                val account = task.getResult(Exception::class.java)
-                account?.idToken?.let { viewModel.signInWithGoogle(it) }
-            } catch (e: Exception) {
-                Toast.makeText(this, "Google sign in failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                val account = task.getResult(ApiException::class.java)
+                val idToken = account?.idToken
+                if (idToken != null) {
+                    viewModel.signInWithGoogle(idToken)
+                } else {
+                    Toast.makeText(this, "Google sign in failed: ID token is null", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: ApiException) {
+                Toast.makeText(this, "Google sign in failed: ${e.statusCode}", Toast.LENGTH_SHORT).show()
             }
         }
     }
