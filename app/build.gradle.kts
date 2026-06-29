@@ -6,37 +6,38 @@ plugins {
     alias(libs.plugins.google.services)
 }
 
-// ── Signing config from local.properties ─────────────────────────────────────
-private fun localProp(key: String): String? {
-    val f = rootProject.file("local.properties")
-    if (!f.exists()) return null
-    val props = java.util.Properties().also { it.load(f.inputStream()) }
-    return props.getProperty(key)
-}
+// ── Signing config dari local.properties ─────────────────────────────────────
+val localProperties = rootProject.file("local.properties")
+    .takeIf { it.exists() }
+    ?.readLines()
+    ?.associate {
+        val (k, v) = it.split("=", limit = 2).let { p -> p[0] to (p.getOrElse(1) { "" }) }
+        k.trim() to v.trim()
+    }
+    ?: emptyMap()
 
 android {
     namespace   = "com.aether.cloud"
     compileSdk  = 35
 
     defaultConfig {
-        applicationId   = "com.aether.cloud"
-        minSdk          = 24
-        targetSdk       = 35
-        versionCode     = 1
-        versionName     = "1.0.0"
+        applicationId = "com.aether.cloud"
+        minSdk        = 24
+        targetSdk     = 35
+        versionCode   = 1
+        versionName   = "1.0.0"
 
-        // APK output name: aether-cloud-v1.0.0-release.apk
         base.archivesName = "aether-cloud-v$versionName"
     }
 
     signingConfigs {
         create("release") {
-            val storeFilePath = localProp("STORE_FILE")
-            if (storeFilePath != null) {
+            val storeFilePath = localProperties["STORE_FILE"]
+            if (!storeFilePath.isNullOrBlank()) {
                 storeFile     = file(storeFilePath)
-                storePassword = localProp("STORE_PASSWORD")
-                keyAlias      = localProp("KEY_ALIAS")
-                keyPassword   = localProp("KEY_PASSWORD")
+                storePassword = localProperties["STORE_PASSWORD"]
+                keyAlias      = localProperties["KEY_ALIAS"]
+                keyPassword   = localProperties["KEY_PASSWORD"]
             }
         }
     }
