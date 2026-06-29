@@ -50,7 +50,7 @@ class ModuleRepository {
             val snapshot = db.collection("modules")
                 .orderBy("name")
                 .startAt(query)
-                .endAt(query + 'øff')
+                .endAt(query + "\uf8ff")
                 .limit(20)
                 .get()
                 .await()
