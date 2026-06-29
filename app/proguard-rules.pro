@@ -1,20 +1,24 @@
-# ── Repackage & optimasi R8 ───────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════════
+# AETHER CLOUD — ProGuard / R8 Rules
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ── R8 Optimisasi ─────────────────────────────────────────────────────────────
 -repackageclasses ''
 -allowaccessmodification
 -overloadaggressively
 -optimizationpasses 5
 -optimizations !code/simplification/cast,field/*,class/merging/*,code/allocation/variable
 
-# ── Attributes wajib ─────────────────────────────────────────────────────────
+# ── Attributes wajib ──────────────────────────────────────────────────────────
 -keepattributes Signature,*Annotation*,InnerClasses,EnclosingMethod
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile
 
 # =============================================================================
-# LOGLOG — CORE
+# AETHER CLOUD — CORE
 # =============================================================================
--keep public class com.aether.lv.MainActivity { <init>(); }
--keep public class com.aether.lv.LogLogApplication { <init>(); }
+-keep public class com.aether.cloud.MainActivity { <init>(); }
+-keep public class com.aether.cloud.AetherApp { <init>(); }
 
 # =============================================================================
 # KOTLIN
@@ -58,9 +62,46 @@
 # =============================================================================
 # GSON
 # =============================================================================
--keepattributes *Annotation*
 -keep class com.google.gson.** { *; }
+-keep class com.aether.cloud.data.model.** { *; }
 -dontwarn com.google.gson.**
+
+# =============================================================================
+# FIREBASE
+# =============================================================================
+-keep class com.google.firebase.** { *; }
+-keep class com.google.android.gms.** { *; }
+-dontwarn com.google.firebase.**
+-dontwarn com.google.android.gms.**
+
+# =============================================================================
+# FACEBOOK LOGIN
+# =============================================================================
+-keep class com.facebook.** { *; }
+-keep interface com.facebook.** { *; }
+-keep enum com.facebook.** { *; }
+-dontwarn com.facebook.**
+
+# =============================================================================
+# COIL / GLIDE
+# =============================================================================
+-keep public class * implements com.bumptech.glide.module.GlideModule
+-keep class * extends com.bumptech.glide.module.AppGlideModule { <init>(...); }
+-keep public enum com.bumptech.glide.load.ImageHeaderParser$** {
+  **[] $VALUES;
+  public *;
+}
+-dontwarn com.bumptech.glide.**
+-dontwarn io.coil.kt.**
+
+# =============================================================================
+# UNITY ADS
+# =============================================================================
+-keep class com.unity3d.** { *; }
+-keep interface com.unity3d.** { *; }
+-keep class com.unity3d.services.** { *; }
+-keep class com.unity3d.ads.** { *; }
+-dontwarn com.unity3d.**
 
 # =============================================================================
 # PARCELABLE / SERIALIZABLE / ENUM
@@ -88,19 +129,3 @@
 -dontwarn java.lang.invoke.**
 -dontwarn javax.annotation.**
 -dontwarn sun.misc.**
-
-# ─── Unity Ads ───────────────────────────────────────────────────────────────
--keep class com.unity3d.** { *; }
--keep interface com.unity3d.** { *; }
--keep class com.unity3d.services.** { *; }
--keep class com.unity3d.ads.** { *; }
--dontwarn com.unity3d.**
-
-# ─── Native JNI bridge ───────────────────────────────────────────────────────
-# Jaga AdsNative agar nama method-nya tidak di-rename ProGuard
-# (JNI lookup bergantung pada nama kelas dan method yang exact)
--keepclasseswithmembers class com.aether.lv.ads.AdsNative {
-    native <methods>;
-    public static <methods>;
-}
--keep class com.aether.lv.ads.AdsNative { *; }

@@ -1,4 +1,4 @@
-name: Build LogLog
+name: Build Aether Cloud
 
 on:
   push:
@@ -23,8 +23,6 @@ jobs:
           java-version: 17
 
       # ── 3. Setup Gradle ───────────────────────────────────────────────────────
-      # Tidak perlu "gradle wrapper" manual — setup-gradle sudah handle ini.
-      # Versi wrapper diambil dari gradle/wrapper/gradle-wrapper.properties di repo.
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
@@ -39,15 +37,15 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/libs.versions.toml', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/*.gradle.kts', '**/libs.versions.toml', '**/gradle-wrapper.properties') }}
           restore-keys: ${{ runner.os }}-gradle-
 
       # ── 6. Setup keystore ────────────────────────────────────────────────────
       - name: Setup signing
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > log.jks
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > aether.jks
           printf '%s\n' \
-            "STORE_FILE=log.jks" \
+            "STORE_FILE=aether.jks" \
             "STORE_PASSWORD=${{ secrets.STORE_PASSWORD }}" \
             "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" \
             "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" \
@@ -61,8 +59,8 @@ jobs:
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: loglog-release-${{ github.run_number }}
-          path: app/build/outputs/apk/release/loglog-v*-release.apk
+          name: aether-cloud-release-${{ github.run_number }}
+          path: app/build/outputs/apk/release/aether-cloud-v*-release.apk
           if-no-files-found: error
 
       # ── 9. Kirim APK ke Telegram ─────────────────────────────────────────────
@@ -75,9 +73,8 @@ jobs:
           APK_PATH=$(find app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
           APK_NAME=$(basename "$APK_PATH")
 
-          # Ambil versionName dari build.gradle.kts atau build.gradle
+          # Ambil versionName dari build.gradle.kts
           VERSION=$(grep -m1 'versionName' app/build.gradle.kts 2>/dev/null \
-                    || grep -m1 'versionName' app/build.gradle 2>/dev/null \
                     | tr -d ' "' | cut -d'=' -f2)
           [ -z "$VERSION" ] && VERSION="unknown"
 
@@ -86,7 +83,7 @@ jobs:
           SIZE_MB=$(awk "BEGIN {printf \"%.2f\", ${SIZE_BYTES}/1048576}")
 
           CAPTION=$(printf \
-            '✅ Build <b>LogLog</b> berhasil\n\n📦 <b>File:</b> <code>%s</code>\n🏷 <b>Versi:</b> <code>%s</code>\n💾 <b>Ukuran:</b> <code>%s MB</code>\n🔖 <b>Commit:</b> <code>%s</code> — <a href="%s">lihat detail</a>' \
+            '✅ Build <b>Aether Cloud</b> berhasil\n\n📦 <b>File:</b> <code>%s</code>\n🏷 <b>Versi:</b> <code>%s</code>\n💾 <b>Ukuran:</b> <code>%s MB</code>\n🔖 <b>Commit:</b> <code>%s</code> — <a href="%s">lihat detail</a>' \
             "$APK_NAME" "$VERSION" "$SIZE_MB" "$SHA_SHORT" "$RUN_URL")
 
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument" \
@@ -95,7 +92,7 @@ jobs:
             -F caption="${CAPTION}" \
             -F document=@"${APK_PATH}" || true
 
-      # ── 10. Notif Telegram (gagal saja) ──────────────────────────────────────
+      # ── 10. Notif Telegram (gagal) ───────────────────────────────────────────
       - name: Telegram Notification (Failure)
         if: failure()
         run: |
@@ -104,7 +101,7 @@ jobs:
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
           TEXT=$(printf \
-            '❌ Build <b>LogLog</b> gagal\n\n🔖 <b>Commit:</b> <code>%s</code> — <a href="%s">lihat detail</a>' \
+            '❌ Build <b>Aether Cloud</b> gagal\n\n🔖 <b>Commit:</b> <code>%s</code> — <a href="%s">lihat detail</a>' \
             "$SHA_SHORT" "$RUN_URL")
 
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
