@@ -26,7 +26,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # ── 4. Gradle wrapper permission ─────────────────────────────────────────
+      # ── 4. Grant execute permission ──────────────────────────────────────────
       - name: Grant execute permission
         run: chmod +x ./gradlew
 
@@ -53,7 +53,7 @@ jobs:
 
       # ── 7. Build Release APK ─────────────────────────────────────────────────
       - name: Build Release APK
-        run: ./gradlew assembleRelease --no-daemon --stacktrace
+        run: ./gradlew assembleRelease --no-daemon --stacktrace --warning-mode all
 
       # ── 8. Upload artifact ───────────────────────────────────────────────────
       - name: Upload Release APK
@@ -73,12 +73,10 @@ jobs:
           APK_PATH=$(find app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
           APK_NAME=$(basename "$APK_PATH")
 
-          # Ambil versionName dari build.gradle.kts
           VERSION=$(grep -m1 'versionName' app/build.gradle.kts 2>/dev/null \
-                    | tr -d ' "' | cut -d'=' -f2)
+                    | sed 's/.*= *"//' | sed 's/".*//')
           [ -z "$VERSION" ] && VERSION="unknown"
 
-          # Ukuran file dalam MB
           SIZE_BYTES=$(stat -c%s "$APK_PATH")
           SIZE_MB=$(awk "BEGIN {printf \"%.2f\", ${SIZE_BYTES}/1048576}")
 

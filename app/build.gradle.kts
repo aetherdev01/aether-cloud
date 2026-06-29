@@ -1,5 +1,3 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -9,9 +7,11 @@ plugins {
 }
 
 // ── Signing config from local.properties ─────────────────────────────────────
-val localProps = Properties().apply {
+private fun localProp(key: String): String? {
     val f = rootProject.file("local.properties")
-    if (f.exists()) load(f.inputStream())
+    if (!f.exists()) return null
+    val props = java.util.Properties().also { it.load(f.inputStream()) }
+    return props.getProperty(key)
 }
 
 android {
@@ -25,29 +25,32 @@ android {
         versionCode     = 1
         versionName     = "1.0.0"
 
-        // APK name: aether-cloud-v1.0.0-release.apk
-        setProperty("archivesBaseName", "aether-cloud-v$versionName")
+        // APK output name: aether-cloud-v1.0.0-release.apk
+        base.archivesName = "aether-cloud-v$versionName"
     }
 
     signingConfigs {
         create("release") {
-            storeFile   = localProps.getProperty("STORE_FILE")?.let { file(it) }
-            storePassword = localProps.getProperty("STORE_PASSWORD")
-            keyAlias    = localProps.getProperty("KEY_ALIAS")
-            keyPassword = localProps.getProperty("KEY_PASSWORD")
+            val storeFilePath = localProp("STORE_FILE")
+            if (storeFilePath != null) {
+                storeFile     = file(storeFilePath)
+                storePassword = localProp("STORE_PASSWORD")
+                keyAlias      = localProp("KEY_ALIAS")
+                keyPassword   = localProp("KEY_PASSWORD")
+            }
         }
     }
 
     buildTypes {
-        getByName("debug") {
+        debug {
             applicationIdSuffix = ".debug"
             versionNameSuffix   = "-debug"
             isDebuggable        = true
         }
-        getByName("release") {
-            isMinifyEnabled         = true
-            isShrinkResources       = true
-            signingConfig           = signingConfigs.getByName("release")
+        release {
+            isMinifyEnabled   = true
+            isShrinkResources = true
+            signingConfig     = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
