@@ -30,17 +30,27 @@ jobs:
       - name: Grant execute permission
         run: chmod +x ./gradlew
 
-      # ── 5. Gradle cache ──────────────────────────────────────────────────────
+      # ── 5. Remove legacy Groovy build files (konflik dengan KTS) ─────────────
+      # Jika repo masih punya build.gradle / settings.gradle Groovy lama,
+      # Gradle akan membaca keduanya dan crash karena AGP versi berbeda.
+      - name: Remove legacy Groovy build files
+        run: |
+          rm -f build.gradle settings.gradle
+          rm -f app/build.gradle
+          echo "=== Build files sekarang ==="
+          find . -name "*.gradle" -o -name "*.gradle.kts" | grep -v ".gradle/caches" | sort
+
+      # ── 6. Gradle cache ──────────────────────────────────────────────────────
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/*.gradle.kts', '**/libs.versions.toml', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts', '**/libs.versions.toml', '**/gradle-wrapper.properties') }}
           restore-keys: ${{ runner.os }}-gradle-
 
-      # ── 6. Setup keystore ────────────────────────────────────────────────────
+      # ── 7. Setup keystore ────────────────────────────────────────────────────
       - name: Setup signing
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > aether.jks
@@ -51,11 +61,11 @@ jobs:
             "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" \
             > local.properties
 
-      # ── 7. Build Release APK ─────────────────────────────────────────────────
+      # ── 8. Build Release APK ─────────────────────────────────────────────────
       - name: Build Release APK
         run: ./gradlew assembleRelease --no-daemon --stacktrace --warning-mode all
 
-      # ── 8. Upload artifact ───────────────────────────────────────────────────
+      # ── 9. Upload artifact ───────────────────────────────────────────────────
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
@@ -63,7 +73,7 @@ jobs:
           path: app/build/outputs/apk/release/aether-cloud-v*-release.apk
           if-no-files-found: error
 
-      # ── 9. Kirim APK ke Telegram ─────────────────────────────────────────────
+      # ── 10. Kirim APK ke Telegram ────────────────────────────────────────────
       - name: Send APK to Telegram
         if: success()
         run: |
@@ -90,7 +100,7 @@ jobs:
             -F caption="${CAPTION}" \
             -F document=@"${APK_PATH}" || true
 
-      # ── 10. Notif Telegram (gagal) ───────────────────────────────────────────
+      # ── 11. Notif Telegram (gagal) ───────────────────────────────────────────
       - name: Telegram Notification (Failure)
         if: failure()
         run: |
