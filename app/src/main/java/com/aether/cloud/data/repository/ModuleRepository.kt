@@ -97,6 +97,7 @@ class ModuleRepository {
             var fileSize = module.fileSize
 
             if (zipUri != null) {
+                android.util.Log.d("ModuleRepository", "Uploading ZIP for module ${module.id}")
                 val zipRef = storage.reference.child("modules/${module.id}/${module.name}.zip")
                 zipRef.putFile(zipUri).await()
                 fileUrl = zipRef.downloadUrl.await().toString()
@@ -106,6 +107,7 @@ class ModuleRepository {
 
             val screenshotUrls = mutableListOf<String>()
             screenshots.forEachIndexed { index, uri ->
+                android.util.Log.d("ModuleRepository", "Uploading screenshot $index for module ${module.id}")
                 val ssRef = storage.reference.child("modules/${module.id}/screenshot_$index.jpg")
                 ssRef.putFile(uri).await()
                 screenshotUrls.add(ssRef.downloadUrl.await().toString())
@@ -116,10 +118,19 @@ class ModuleRepository {
                 fileSize = fileSize,
                 screenshots = screenshotUrls
             )
+
+            android.util.Log.d("ModuleRepository", "Writing module document ${module.id} to Firestore, authorId=${module.authorId}")
             db.collection("modules").document(module.id).set(finalModule).await()
+            android.util.Log.d("ModuleRepository", "Module ${module.id} uploaded successfully")
             Resource.Success(module.id)
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Upload failed")
+            android.util.Log.e("ModuleRepository", "Upload failed for module ${module.id}", e)
+            val msg = when {
+                e.message?.contains("PERMISSION_DENIED", ignoreCase = true) == true ->
+                    "Upload ditolak server (Firestore/Storage rules). Pastikan kamu login dan rules sudah benar."
+                else -> e.message ?: "Upload failed"
+            }
+            Resource.Error(msg)
         }
     }
 
