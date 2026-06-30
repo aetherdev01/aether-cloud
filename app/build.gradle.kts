@@ -28,6 +28,10 @@ android {
         versionName   = "1.0.0"
 
         base.archivesName = "aether-cloud-v$versionName"
+
+        ndk {
+            abiFilters += setOf("arm64-v8a", "armeabi-v7a")
+        }
     }
 
     signingConfigs {
@@ -56,9 +60,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-        }
-        ndk {
-            abiFilters += setOf("arm64-v8a", "armeabi-v7a")
         }
     }
 
