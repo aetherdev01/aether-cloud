@@ -61,6 +61,16 @@ jobs:
             "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" \
             > local.properties
 
+      # ── 7b. Setup google-services.json ───────────────────────────────────────
+      # Not committed to the repo (contains API keys), so it's injected here
+      # from a base64 secret. processReleaseGoogleServices looks for this file
+      # at app/src/release/google-services.json (or app/google-services.json),
+      # NOT app/src/main/ — that's why the task failed with "file is missing".
+      - name: Setup google-services.json
+        run: |
+          echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > app/src/release/google-services.json
+          test -s app/src/release/google-services.json || (echo "google-services.json is empty — check the GOOGLE_SERVICES_JSON_BASE64 secret" && exit 1)
+
       # ── 8. Build Release APK ─────────────────────────────────────────────────
       - name: Build Release APK
         run: ./gradlew assembleRelease --no-daemon --stacktrace --warning-mode all
