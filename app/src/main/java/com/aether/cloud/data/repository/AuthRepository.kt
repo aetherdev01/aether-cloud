@@ -42,12 +42,12 @@ class AuthRepository(private val context: Context) {
         }
     }
 
-    suspend fun checkUserProfile(uid: String): Boolean {
+    suspend fun checkUserProfile(uid: String): Resource<Boolean> {
         return try {
             val doc = db.collection("users").document(uid).get().await()
-            doc.exists()
+            Resource.Success(doc.exists())
         } catch (e: Exception) {
-            false
+            Resource.Error(e.message ?: "Failed to check profile")
         }
     }
 

@@ -97,7 +97,12 @@ class ProfileSetupActivity : AppCompatActivity() {
                     startActivity(Intent(this@ProfileSetupActivity, MainActivity::class.java))
                     finish()
                 } else {
-                    Toast.makeText(this@ProfileSetupActivity, result.message, Toast.LENGTH_LONG).show()
+                    val msg = (result as? Resource.Error)?.message ?: "Unknown error"
+                    Toast.makeText(
+                        this@ProfileSetupActivity,
+                        "Gagal menyimpan profil: $msg\nPeriksa Firestore Security Rules.",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             } catch (e: Exception) {
                 binding.progressBar.visibility = android.view.View.GONE

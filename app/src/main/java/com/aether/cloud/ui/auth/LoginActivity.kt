@@ -100,13 +100,26 @@ class LoginActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val currentUser = authRepository.getCurrentUser()
             if (currentUser != null) {
-                val hasProfile = authRepository.checkUserProfile(currentUser.uid)
-                if (hasProfile) {
-                    startActivity(Intent(this@LoginActivity, MainActivity::class.java))
-                    finish()
-                } else {
-                    startActivity(Intent(this@LoginActivity, ProfileSetupActivity::class.java))
-                    finish()
+                binding.progressBar.visibility = android.view.View.VISIBLE
+                when (val result = authRepository.checkUserProfile(currentUser.uid)) {
+                    is Resource.Success -> {
+                        binding.progressBar.visibility = android.view.View.GONE
+                        if (result.data == true) {
+                            startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                        } else {
+                            startActivity(Intent(this@LoginActivity, ProfileSetupActivity::class.java))
+                        }
+                        finish()
+                    }
+                    is Resource.Error -> {
+                        binding.progressBar.visibility = android.view.View.GONE
+                        Toast.makeText(
+                            this@LoginActivity,
+                            "Failed to check profile: ${result.message}\nPeriksa Firestore Security Rules atau koneksi internet.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                    else -> {}
                 }
             }
         }
