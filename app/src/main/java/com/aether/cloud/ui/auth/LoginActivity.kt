@@ -66,16 +66,11 @@ class LoginActivity : AppCompatActivity() {
             googleSignInLauncher.launch(signInIntent)
         }
 
-        binding.btnPhone.setOnClickListener {
-            startActivity(Intent(this, PhoneLoginActivity::class.java))
-        }
-
         observeAuthState()
     }
 
     override fun onResume() {
         super.onResume()
-        // Catch the case where PhoneLoginActivity finished sign-in and returned here
         if (authRepository.getCurrentUser() != null && ::viewModel.isInitialized) {
             checkProfileAndProceed()
         }

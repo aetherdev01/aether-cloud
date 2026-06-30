@@ -25,7 +25,10 @@ class ProfileSetupActivity : AppCompatActivity() {
     private val imagePicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
             photoUri = it
-            Glide.with(this).load(it).into(binding.ivProfile)
+            Glide.with(this)
+                .load(it)
+                .circleCrop()
+                .into(binding.ivProfile)
         }
     }
 
@@ -34,12 +37,41 @@ class ProfileSetupActivity : AppCompatActivity() {
         binding = ActivityProfileSetupBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        prefillFromGoogleAccount()
+
         binding.ivProfile.setOnClickListener {
             imagePicker.launch("image/*")
         }
 
+        // Clear inline errors as the user types
+        binding.etDisplayName.doOnTextChanged { binding.etDisplayName.error = null }
+        binding.etUsername.doOnTextChanged { binding.tilUsername.error = null }
+
         binding.btnSave.setOnClickListener {
             saveProfile()
+        }
+    }
+
+    private fun prefillFromGoogleAccount() {
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return
+
+        currentUser.displayName?.let { name ->
+            binding.etDisplayName.setText(name)
+        }
+
+        currentUser.photoUrl?.let { photo ->
+            Glide.with(this)
+                .load(photo)
+                .placeholder(binding.ivProfile.drawable)
+                .circleCrop()
+                .into(binding.ivProfile)
+        }
+
+        // Suggest a username from the email or display name, e.g. "john.doe" -> "johndoe"
+        val suggestion = currentUser.email?.substringBefore("@")
+            ?: currentUser.displayName?.replace(" ", "")
+        suggestion?.let {
+            binding.etUsername.setText(it.lowercase().replace(Regex("[^a-z0-9_]"), ""))
         }
     }
 
@@ -50,10 +82,22 @@ class ProfileSetupActivity : AppCompatActivity() {
         val github = binding.etGithub.text.toString().trim()
         val website = binding.etWebsite.text.toString().trim()
 
-        if (username.isEmpty() || displayName.isEmpty()) {
-            Toast.makeText(this, "Username and Name are required", Toast.LENGTH_SHORT).show()
-            return
+        var hasError = false
+
+        if (displayName.isEmpty()) {
+            binding.etDisplayName.error = "Name is required"
+            hasError = true
         }
+
+        if (username.isEmpty()) {
+            binding.tilUsername.error = "Username is required"
+            hasError = true
+        } else if (!username.matches(Regex("^[a-zA-Z0-9_]{3,20}$"))) {
+            binding.tilUsername.error = "3-20 characters: letters, numbers, underscore only"
+            hasError = true
+        }
+
+        if (hasError) return
 
         val currentUser = FirebaseAuth.getInstance().currentUser ?: run {
             Toast.makeText(this, "Not authenticated", Toast.LENGTH_SHORT).show()
@@ -100,7 +144,7 @@ class ProfileSetupActivity : AppCompatActivity() {
                     val msg = (result as? Resource.Error)?.message ?: "Unknown error"
                     Toast.makeText(
                         this@ProfileSetupActivity,
-                        "Gagal menyimpan profil: $msg\nPeriksa Firestore Security Rules.",
+                        "Gagal menyimpan profil: $msg",
                         Toast.LENGTH_LONG
                     ).show()
                 }
@@ -111,4 +155,12 @@ class ProfileSetupActivity : AppCompatActivity() {
             }
         }
     }
+}
+
+private fun android.widget.EditText.doOnTextChanged(action: () -> Unit) {
+    addTextChangedListener(object : android.text.TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { action() }
+        override fun afterTextChanged(s: android.text.Editable?) {}
+    })
 }

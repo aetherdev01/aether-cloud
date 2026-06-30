@@ -34,11 +34,6 @@
             android:theme="@style/Theme.AetherCloud" />
 
         <activity
-            android:name=".ui.auth.PhoneLoginActivity"
-            android:theme="@style/Theme.AetherCloud"
-            android:windowSoftInputMode="adjustResize" />
-
-        <activity
             android:name=".MainActivity"
             android:theme="@style/Theme.AetherCloud" />
 
