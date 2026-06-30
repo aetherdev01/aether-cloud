@@ -21,7 +21,7 @@
     <color name="md_surface">#12131A</color>
     <color name="md_surface_dim">#0D0E14</color>
     <color name="md_surface_container">#1A1B24</color>
-    <color name="md_surface_container_high">#22243000</color>
+    <color name="md_surface_container_high">#222430</color>
     <color name="md_surface_variant">#1E2030</color>
     <color name="md_on_surface">#E3E4F5</color>
     <color name="md_on_surface_variant">#A0A3BE</color>
@@ -36,9 +36,34 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
 
-    <!-- Light variants (for day mode) -->
-    <color name="md_primary_light">#3547C8</color>
-    <color name="md_surface_light">#F8F9FF</color>
-    <color name="md_surface_container_light">#ECEEFF</color>
-    <color name="md_on_surface_light">#181A2C</color>
+    <!-- ===== Light palette (default theme, M3 standard light) ===== -->
+    <color name="md_primary_light">#3F4FC8</color>
+    <color name="md_on_primary_light">#FFFFFF</color>
+    <color name="md_primary_container_light">#DEE0FF</color>
+    <color name="md_on_primary_container_light">#000C8F</color>
+
+    <color name="md_secondary_light">#00696F</color>
+    <color name="md_on_secondary_light">#FFFFFF</color>
+    <color name="md_secondary_container_light">#9DF1F8</color>
+    <color name="md_on_secondary_container_light">#002022</color>
+
+    <color name="md_tertiary_light">#3F4FC8</color>
+    <color name="md_on_tertiary_light">#FFFFFF</color>
+
+    <color name="md_error_light">#BA1A1A</color>
+    <color name="md_on_error_light">#FFFFFF</color>
+    <color name="md_error_container_light">#FFDAD6</color>
+    <color name="md_on_error_container_light">#410002</color>
+
+    <color name="md_surface_light">#FCF8FF</color>
+    <color name="md_surface_dim_light">#DBD9E0</color>
+    <color name="md_surface_container_light">#F1EFF7</color>
+    <color name="md_surface_container_high_light">#E9E7EF</color>
+    <color name="md_surface_variant_light">#E2E1EC</color>
+    <color name="md_on_surface_light">#1B1B21</color>
+    <color name="md_on_surface_variant_light">#46464F</color>
+    <color name="md_outline_light">#777680</color>
+    <color name="md_outline_variant_light">#C7C5D0</color>
+    <color name="md_inverse_surface_light">#303036</color>
+    <color name="md_inverse_on_surface_light">#F2EFF7</color>
 </resources>

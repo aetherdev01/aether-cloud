@@ -134,6 +134,9 @@ class ModuleRepository {
             val msg = when {
                 e.message?.contains("PERMISSION_DENIED", ignoreCase = true) == true ->
                     "Upload ditolak server (Firestore/Storage rules). Pastikan kamu login dan rules sudah benar."
+                e is java.io.FileNotFoundException ||
+                    e.message?.contains("Unable to extract", ignoreCase = true) == true ->
+                    "File yang dipilih sudah tidak bisa diakses (mungkin cache terhapus atau izin dicabut). Silakan pilih ulang file."
                 else -> e.message ?: "Upload failed"
             }
             Resource.Error(msg)

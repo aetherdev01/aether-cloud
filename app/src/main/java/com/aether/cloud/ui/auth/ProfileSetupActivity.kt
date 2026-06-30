@@ -15,8 +15,10 @@ import com.aether.cloud.util.Resource
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.io.FileNotFoundException
 
 class ProfileSetupActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProfileSetupBinding
@@ -24,6 +26,20 @@ class ProfileSetupActivity : AppCompatActivity() {
 
     private val imagePicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
+            // Persist read access so the URI survives process recreation (rotation,
+            // backgrounding) instead of failing later with "object does not exist"
+            // when Firebase Storage tries to read a revoked content:// URI.
+            try {
+                contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            } catch (_: SecurityException) {
+                // Some providers (e.g. camera apps) don't support persistable
+                // permissions; the transient grant from GetContent() still works
+                // as long as we don't outlive this process, which is the best
+                // we can do in that case.
+            }
             photoUri = it
             Glide.with(this)
                 .load(it)
@@ -36,6 +52,14 @@ class ProfileSetupActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityProfileSetupBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        savedInstanceState?.getString(KEY_PHOTO_URI)?.let { saved ->
+            photoUri = Uri.parse(saved)
+            Glide.with(this)
+                .load(photoUri)
+                .circleCrop()
+                .into(binding.ivProfile)
+        }
 
         prefillFromGoogleAccount()
 
@@ -50,6 +74,11 @@ class ProfileSetupActivity : AppCompatActivity() {
         binding.btnSave.setOnClickListener {
             saveProfile()
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        photoUri?.let { outState.putString(KEY_PHOTO_URI, it.toString()) }
     }
 
     private fun prefillFromGoogleAccount() {
@@ -111,10 +140,33 @@ class ProfileSetupActivity : AppCompatActivity() {
 
                 var photoUrl = currentUser.photoUrl?.toString() ?: ""
 
-                if (photoUri != null) {
+                val uriToUpload = photoUri
+                if (uriToUpload != null) {
+                    // Fail fast with a clear message if the picked file is no longer
+                    // reachable (revoked permission, cleared cache, etc.) instead of
+                    // letting Firebase Storage surface a confusing "object does not
+                    // exist" error from a failed local read.
+                    val isReadable = try {
+                        contentResolver.openInputStream(uriToUpload)?.use { true } ?: false
+                    } catch (_: Exception) {
+                        false
+                    }
+
+                    if (!isReadable) {
+                        binding.progressBar.visibility = android.view.View.GONE
+                        binding.btnSave.isEnabled = true
+                        photoUri = null
+                        Toast.makeText(
+                            this@ProfileSetupActivity,
+                            "Foto profil tidak bisa diakses lagi, silakan pilih ulang foto.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        return@launch
+                    }
+
                     val ref = FirebaseStorage.getInstance().reference
                         .child("users/${currentUser.uid}/profile.jpg")
-                    ref.putFile(photoUri!!).await()
+                    ref.putFile(uriToUpload).await()
                     photoUrl = ref.downloadUrl.await().toString()
                 }
 
@@ -148,12 +200,35 @@ class ProfileSetupActivity : AppCompatActivity() {
                         Toast.LENGTH_LONG
                     ).show()
                 }
+            } catch (e: StorageException) {
+                binding.progressBar.visibility = android.view.View.GONE
+                binding.btnSave.isEnabled = true
+                if (e.errorCode == StorageException.ERROR_OBJECT_NOT_FOUND ||
+                    e.cause is FileNotFoundException
+                ) {
+                    photoUri = null
+                    Toast.makeText(
+                        this@ProfileSetupActivity,
+                        "Foto profil tidak ditemukan lagi, silakan pilih ulang foto.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        this@ProfileSetupActivity,
+                        "Gagal mengunggah foto: ${e.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             } catch (e: Exception) {
                 binding.progressBar.visibility = android.view.View.GONE
                 binding.btnSave.isEnabled = true
                 Toast.makeText(this@ProfileSetupActivity, e.message, Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    companion object {
+        private const val KEY_PHOTO_URI = "key_photo_uri"
     }
 }
 
