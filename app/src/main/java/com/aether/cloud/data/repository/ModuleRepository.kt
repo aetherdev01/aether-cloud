@@ -98,7 +98,13 @@ class ModuleRepository {
 
             if (zipUri != null) {
                 android.util.Log.d("ModuleRepository", "Uploading ZIP for module ${module.id}")
-                val zipRef = storage.reference.child("modules/${module.id}/${module.name}.zip")
+                // Use a fixed, sanitized file name instead of the raw module name.
+                // module.name is free-text user input and can contain '/', spaces,
+                // or other characters that break the Storage path (and don't match
+                // storage.rules, which only allows a single path segment under
+                // modules/{moduleId}/). That mismatch is what causes
+                // "Object does not exist at location" when getDownloadUrl() is called.
+                val zipRef = storage.reference.child("modules/${module.id}/module.zip")
                 zipRef.putFile(zipUri).await()
                 fileUrl = zipRef.downloadUrl.await().toString()
                 val metadata = zipRef.metadata.await()

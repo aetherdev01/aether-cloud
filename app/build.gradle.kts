@@ -57,6 +57,9 @@ android {
                 "proguard-rules.pro"
             )
         }
+        ndk {
+            abiFilters += setOf("arm64-v8a", "armeabi-v7a")
+        }
     }
 
     compileOptions {
