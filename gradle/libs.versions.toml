@@ -37,9 +37,6 @@ firebaseBom             = "33.7.0"
 # Google
 playServicesAuth        = "21.3.0"
 
-# Facebook
-facebookLogin           = "17.0.2"
-
 # Ads
 unityAds                = "4.12.4"
 
@@ -108,9 +105,6 @@ firebase-storage-ktx                    = { group = "com.google.firebase",      
 
 # ── Google Sign-In ────────────────────────────────────────────────────────────
 play-services-auth                      = { group = "com.google.android.gms",    name = "play-services-auth",            version.ref = "playServicesAuth"    }
-
-# ── Facebook ──────────────────────────────────────────────────────────────────
-facebook-login                          = { group = "com.facebook.android",      name = "facebook-login",                version.ref = "facebookLogin"       }
 
 # ── Ads ───────────────────────────────────────────────────────────────────────
 unity-ads                               = { group = "com.unity3d.ads",           name = "unity-ads",                     version.ref = "unityAds"            }

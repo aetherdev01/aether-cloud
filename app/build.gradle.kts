@@ -150,9 +150,6 @@ dependencies {
     // ── Google Sign-In ────────────────────────────────────────────────────────
     implementation(libs.play.services.auth)
 
-    // ── Facebook Login ────────────────────────────────────────────────────────
-    implementation(libs.facebook.login)
-
     // ── Ads ───────────────────────────────────────────────────────────────────
     implementation(libs.unity.ads)
 }

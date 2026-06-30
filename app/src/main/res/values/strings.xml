@@ -4,8 +4,16 @@
     <string name="title_home">Home</string>
     <string name="title_upload">Upload</string>
     <string name="title_settings">Settings</string>
-    <string name="login_with_google">Login with Google</string>
-    <string name="login_with_facebook">Login with Facebook</string>
+    <string name="login_with_google">Continue with Google</string>
+    <string name="login_with_phone">Continue with Phone</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="phone_hint">e.g. 81234567890</string>
+    <string name="send_otp">Send Code</string>
+    <string name="verify_otp">Verify</string>
+    <string name="otp_title">Enter Verification Code</string>
+    <string name="otp_subtitle">We sent a 6-digit code to</string>
+    <string name="resend_code">Resend Code</string>
+    <string name="change_number">Change Number</string>
     <string name="complete_profile">Complete Your Profile</string>
     <string name="username">Username</string>
     <string name="display_name">Display Name</string>
@@ -32,8 +40,5 @@
     <string name="download">Download</string>
     <string name="comment_hint">Write a comment…</string>
     <string name="send">Send</string>
-    <string name="facebook_app_id">YOUR_FACEBOOK_APP_ID</string>
-    <string name="fb_login_protocol_scheme">fbYOUR_FACEBOOK_APP_ID</string>
-    <string name="facebook_client_token">YOUR_FACEBOOK_CLIENT_TOKEN</string>
     <string name="default_web_client_id">557756877767-274mrq4gkoa2j4jabgi249fcnoid2f4k.apps.googleusercontent.com</string>
 </resources>
