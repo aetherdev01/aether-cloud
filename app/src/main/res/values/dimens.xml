@@ -3,4 +3,6 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="card_margin">8dp</dimen>
     <dimen name="card_radius">12dp</dimen>
+    <dimen name="dot_size_inactive">8dp</dimen>
+    <dimen name="dot_width_active">20dp</dimen>
 </resources>

@@ -5,12 +5,15 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.aether.cloud.MainActivity
 import com.aether.cloud.data.repository.AuthRepository
 import com.aether.cloud.databinding.ActivityLoginBinding
+import com.aether.cloud.ui.onboarding.OnboardingActivity
+import com.aether.cloud.util.AppPreferences
 import com.aether.cloud.util.Resource
 import com.aether.cloud.viewmodel.AuthViewModel
 import com.aether.cloud.viewmodel.AuthViewModelFactory
@@ -22,6 +25,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
     private lateinit var viewModel: AuthViewModel
     private lateinit var authRepository: AuthRepository
+    private lateinit var appPreferences: AppPreferences
 
     private val googleSignInLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -49,7 +53,31 @@ class LoginActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Must be called before super.onCreate() / setContentView() so the
+        // system splash screen (Theme.AetherCloud.Splash) is shown while we
+        // decide whether to send the user to onboarding or straight to login.
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+
+        appPreferences = AppPreferences(this)
+
+        // Keep the splash on screen until we know whether onboarding is needed.
+        var isReady = false
+        splashScreen.setKeepOnScreenCondition { !isReady }
+
+        lifecycleScope.launch {
+            val onboardingDone = appPreferences.isOnboardingDone()
+            isReady = true
+            if (!onboardingDone) {
+                startActivity(Intent(this@LoginActivity, OnboardingActivity::class.java))
+                finish()
+                return@launch
+            }
+            initLoginUi()
+        }
+    }
+
+    private fun initLoginUi() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -71,7 +99,7 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (authRepository.getCurrentUser() != null && ::viewModel.isInitialized) {
+        if (::authRepository.isInitialized && authRepository.getCurrentUser() != null && ::viewModel.isInitialized) {
             checkProfileAndProceed()
         }
     }

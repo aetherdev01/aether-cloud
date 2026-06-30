@@ -35,4 +35,26 @@
     <string name="comment_hint">Write a comment…</string>
     <string name="send">Send</string>
     <string name="default_web_client_id">557756877767-274mrq4gkoa2j4jabgi249fcnoid2f4k.apps.googleusercontent.com</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_get_started">Get Started</string>
+    <string name="onboarding_title_1">Discover Modules</string>
+    <string name="onboarding_desc_1">Browse and search a growing library of root and no-root modules shared by the community.</string>
+    <string name="onboarding_title_2">Share What You Build</string>
+    <string name="onboarding_desc_2">Upload your own modules with screenshots, version notes, and a description in just a few taps.</string>
+    <string name="onboarding_title_3">Join the Conversation</string>
+    <string name="onboarding_desc_3">Comment on modules, track downloads, and connect with other developers.</string>
+
+    <!-- Empty states -->
+    <string name="empty_modules_title">No modules yet</string>
+    <string name="empty_modules_desc">Be the first to share a module with the community.</string>
+    <string name="empty_search_title">No results found</string>
+    <string name="empty_search_desc">Try a different keyword or check your spelling.</string>
+    <string name="empty_my_modules_title">You haven\'t uploaded anything</string>
+    <string name="empty_my_modules_desc">Modules you upload will show up here.</string>
+    <string name="empty_comments_title">No comments yet</string>
+    <string name="empty_comments_desc">Be the first to leave a comment.</string>
 </resources>
+

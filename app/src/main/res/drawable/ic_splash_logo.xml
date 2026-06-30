@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="160dp"
+    android:height="160dp"
+    android:viewportWidth="160"
+    android:viewportHeight="160">
+
+    <!-- Cloud body -->
+    <path
+        android:fillColor="#0A1276"
+        android:pathData="M129,86.9C126.5,68.4 110.4,54 91,54 75.5,54 62,63.2 55.9,76.9 38.6,78.8 25,93.3 25,111c0,18.8 15.2,34 34,34h70c15.5,0 28,-12.5 28,-28 0,-14.6 -11.1,-26.6 -25,-28.1z" />
+
+    <!-- Upward arrow representing "upload to cloud" -->
+    <path
+        android:fillColor="#8B9DFF"
+        android:pathData="M84,98 L84,68 L72,80 L80,80 L80,46 L100,46 L100,80 L108,80 L96,68 Z" />
+</vector>

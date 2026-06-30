@@ -27,11 +27,49 @@
         android:textColor="?attr/colorOnSurface"
         android:layout_marginBottom="12dp" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvComments"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="320dp"
-        android:clipToPadding="false" />
+        android:layout_height="320dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvComments"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false" />
+
+        <LinearLayout
+            android:id="@+id/layoutEmptyComments"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_comment"
+                app:tint="?attr/colorOnSurfaceVariant"
+                android:alpha="0.6"
+                android:layout_marginBottom="10dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/empty_comments_title"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
+                android:layout_marginBottom="2dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/empty_comments_desc"
+                android:textSize="12sp"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+        </LinearLayout>
+    </FrameLayout>
 
     <com.google.android.material.divider.MaterialDivider
         android:layout_width="match_parent"

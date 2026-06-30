@@ -26,6 +26,7 @@ class MyModulesFragment : Fragment() {
 
     private val viewModel: HomeViewModel by viewModels { HomeViewModelFactory(ModuleRepository()) }
     private lateinit var adapter: MyModuleAdapter
+    private var userId: String? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentMyModulesBinding.inflate(inflater, container, false)
@@ -51,37 +52,51 @@ class MyModulesFragment : Fragment() {
             adapter = this@MyModulesFragment.adapter
         }
 
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
-        if (userId != null) {
-            observeModules(userId)
+        userId = FirebaseAuth.getInstance().currentUser?.uid
+
+        binding.swipeRefresh.setOnRefreshListener {
+            userId?.let { observeModules(it, isRefresh = true) }
         }
+
+        userId?.let { observeModules(it) }
     }
 
-    private fun observeModules(userId: String) {
+    private fun observeModules(userId: String, isRefresh: Boolean = false) {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 val repo = ModuleRepository()
                 repo.getMyModules(userId).collect { resource ->
                     when (resource) {
                         is Resource.Loading -> {
-                            binding.progressBar.visibility = View.VISIBLE
+                            if (!binding.swipeRefresh.isRefreshing) {
+                                binding.includeShimmer.shimmerLayout.visibility = View.VISIBLE
+                                binding.includeShimmer.shimmerLayout.startShimmer()
+                                binding.recyclerView.visibility = View.GONE
+                            }
+                            binding.layoutEmpty.visibility = View.GONE
                         }
                         is Resource.Success -> {
-                            binding.progressBar.visibility = View.GONE
+                            stopShimmer()
+                            binding.swipeRefresh.isRefreshing = false
                             val modules = resource.data ?: emptyList()
                             if (modules.isEmpty()) {
-                                binding.tvEmpty.visibility = View.VISIBLE
                                 binding.recyclerView.visibility = View.GONE
+                                binding.layoutEmpty.visibility = View.VISIBLE
+                                binding.tvEmptyTitle.setText(com.aether.cloud.R.string.empty_my_modules_title)
+                                binding.tvEmptyDesc.setText(com.aether.cloud.R.string.empty_my_modules_desc)
                             } else {
-                                binding.tvEmpty.visibility = View.GONE
+                                binding.layoutEmpty.visibility = View.GONE
                                 binding.recyclerView.visibility = View.VISIBLE
                                 adapter.submitList(modules)
                             }
                         }
                         is Resource.Error -> {
-                            binding.progressBar.visibility = View.GONE
-                            binding.tvEmpty.visibility = View.VISIBLE
-                            binding.tvEmpty.text = resource.message
+                            stopShimmer()
+                            binding.swipeRefresh.isRefreshing = false
+                            binding.recyclerView.visibility = View.GONE
+                            binding.layoutEmpty.visibility = View.VISIBLE
+                            binding.tvEmptyTitle.text = "Gagal memuat data"
+                            binding.tvEmptyDesc.text = resource.message
                         }
                     }
                 }
@@ -89,7 +104,13 @@ class MyModulesFragment : Fragment() {
         }
     }
 
+    private fun stopShimmer() {
+        binding.includeShimmer.shimmerLayout.stopShimmer()
+        binding.includeShimmer.shimmerLayout.visibility = View.GONE
+    }
+
     override fun onDestroyView() {
+        binding.includeShimmer.shimmerLayout.stopShimmer()
         super.onDestroyView()
         _binding = null
     }

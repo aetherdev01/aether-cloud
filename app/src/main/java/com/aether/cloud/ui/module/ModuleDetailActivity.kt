@@ -141,7 +141,14 @@ class ModuleDetailActivity : AppCompatActivity() {
         lifecycleScope.launch {
             moduleRepo.getComments(moduleId).collect { resource ->
                 when (resource) {
-                    is Resource.Success -> adapter.submitList(resource.data ?: emptyList())
+                    is Resource.Success -> {
+                        val comments = resource.data ?: emptyList()
+                        adapter.submitList(comments)
+                        sheetBinding.layoutEmptyComments.visibility =
+                            if (comments.isEmpty()) View.VISIBLE else View.GONE
+                        sheetBinding.rvComments.visibility =
+                            if (comments.isEmpty()) View.GONE else View.VISIBLE
+                    }
                     else -> {}
                 }
             }

@@ -39,8 +39,19 @@ class UploadFragment : Fragment() {
 
     private val zipPicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
-            zipUri = it
+            // Some file managers / share targets (WhatsApp, Telegram, Drive, etc.)
+            // tag .zip files with a generic mime type like application/octet-stream
+            // or application/x-zip-compressed instead of application/zip. If we'd
+            // launched the picker filtered strictly to "application/zip", those
+            // files simply don't show up — so it *looks* like nothing happens when
+            // tapping "add file". We accept any mime type here and instead validate
+            // by file extension/name after the user picks something.
             val name = getFileName(it)
+            if (!name.lowercase().endsWith(".zip")) {
+                Toast.makeText(requireContext(), "File harus berformat .zip", Toast.LENGTH_SHORT).show()
+                return@let
+            }
+            zipUri = it
             binding.tvZipFile.text = "Selected: $name"
         }
     }
@@ -62,7 +73,7 @@ class UploadFragment : Fragment() {
 
         setupScreenshotRecycler()
 
-        binding.btnPickZip.setOnClickListener { zipPicker.launch("application/zip") }
+        binding.btnPickZip.setOnClickListener { zipPicker.launch("*/*") }
         binding.btnPickScreenshots.setOnClickListener { imagePicker.launch("image/*") }
         binding.btnUpload.setOnClickListener { uploadModule() }
 

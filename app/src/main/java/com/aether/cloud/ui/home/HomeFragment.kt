@@ -28,6 +28,8 @@ class HomeFragment : Fragment() {
 
     private val viewModel: HomeViewModel by viewModels { HomeViewModelFactory(ModuleRepository()) }
     private lateinit var moduleAdapter: ModuleAdapter
+    private var currentFilter = "ALL"
+    private var currentQuery: String? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
@@ -40,6 +42,7 @@ class HomeFragment : Fragment() {
         setupRecyclerView()
         setupChips()
         setupSearch()
+        setupSwipeRefresh()
         observeModules()
 
         binding.fabUpload.setOnClickListener {
@@ -48,6 +51,17 @@ class HomeFragment : Fragment() {
         }
 
         viewModel.loadModules("ALL")
+    }
+
+    private fun setupSwipeRefresh() {
+        binding.swipeRefresh.setOnRefreshListener {
+            val query = currentQuery
+            if (!query.isNullOrEmpty()) {
+                viewModel.searchModules(query)
+            } else {
+                viewModel.loadModules(currentFilter)
+            }
+        }
     }
 
     private fun setupRecyclerView() {
@@ -73,6 +87,8 @@ class HomeFragment : Fragment() {
                 R.id.chipNoRoot -> "NO_ROOT"
                 else -> "ALL"
             }
+            currentFilter = filter
+            currentQuery = null
             viewModel.loadModules(filter)
         }
     }
@@ -80,12 +96,16 @@ class HomeFragment : Fragment() {
     private fun setupSearch() {
         binding.searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                query?.let { viewModel.searchModules(it) }
+                query?.let {
+                    currentQuery = it
+                    viewModel.searchModules(it)
+                }
                 return true
             }
             override fun onQueryTextChange(newText: String?): Boolean {
                 if (newText.isNullOrEmpty()) {
-                    viewModel.loadModules("ALL")
+                    currentQuery = null
+                    viewModel.loadModules(currentFilter)
                 }
                 return true
             }
@@ -98,25 +118,35 @@ class HomeFragment : Fragment() {
                 viewModel.modules.collect { resource ->
                     when (resource) {
                         is Resource.Loading -> {
-                            binding.progressBar.visibility = View.VISIBLE
-                            binding.tvEmpty.visibility = View.GONE
+                            // Only show the shimmer skeleton for the *first* load;
+                            // a pull-to-refresh already has its own spinner and
+                            // shouldn't replace existing content with placeholders.
+                            if (!binding.swipeRefresh.isRefreshing) {
+                                binding.includeShimmer.shimmerLayout.visibility = View.VISIBLE
+                                binding.includeShimmer.shimmerLayout.startShimmer()
+                                binding.recyclerView.visibility = View.GONE
+                            }
+                            binding.layoutEmpty.visibility = View.GONE
                         }
                         is Resource.Success -> {
-                            binding.progressBar.visibility = View.GONE
+                            stopShimmer()
+                            binding.swipeRefresh.isRefreshing = false
                             val modules = resource.data ?: emptyList()
                             if (modules.isEmpty()) {
-                                binding.tvEmpty.visibility = View.VISIBLE
-                                binding.recyclerView.visibility = View.GONE
+                                showEmptyState()
                             } else {
-                                binding.tvEmpty.visibility = View.GONE
+                                binding.layoutEmpty.visibility = View.GONE
                                 binding.recyclerView.visibility = View.VISIBLE
                                 moduleAdapter.submitList(modules)
                             }
                         }
                         is Resource.Error -> {
-                            binding.progressBar.visibility = View.GONE
-                            binding.tvEmpty.visibility = View.VISIBLE
-                            binding.tvEmpty.text = resource.message
+                            stopShimmer()
+                            binding.swipeRefresh.isRefreshing = false
+                            binding.recyclerView.visibility = View.GONE
+                            binding.layoutEmpty.visibility = View.VISIBLE
+                            binding.tvEmptyTitle.text = "Gagal memuat modul"
+                            binding.tvEmptyDesc.text = resource.message
                         }
                     }
                 }
@@ -124,7 +154,25 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun stopShimmer() {
+        binding.includeShimmer.shimmerLayout.stopShimmer()
+        binding.includeShimmer.shimmerLayout.visibility = View.GONE
+    }
+
+    private fun showEmptyState() {
+        binding.recyclerView.visibility = View.GONE
+        binding.layoutEmpty.visibility = View.VISIBLE
+        if (!currentQuery.isNullOrEmpty()) {
+            binding.tvEmptyTitle.setText(R.string.empty_search_title)
+            binding.tvEmptyDesc.setText(R.string.empty_search_desc)
+        } else {
+            binding.tvEmptyTitle.setText(R.string.empty_modules_title)
+            binding.tvEmptyDesc.setText(R.string.empty_modules_desc)
+        }
+    }
+
     override fun onDestroyView() {
+        binding.includeShimmer.shimmerLayout.stopShimmer()
         super.onDestroyView()
         _binding = null
     }
