@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "557756877767",
+    "firebase_url": "https://aether-cloud-df1ca-default-rtdb.firebaseio.com",
     "project_id": "aether-cloud-df1ca",
     "storage_bucket": "aether-cloud-df1ca.firebasestorage.app"
   },
@@ -14,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "557756877767-14bftqtivt8scdiv68tmncce6adq3658.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aether.cloud",
+            "certificate_hash": "509db21a252e219096e438e2c89c7f35e7f261c6"
+          }
+        },
+        {
           "client_id": "557756877767-274mrq4gkoa2j4jabgi249fcnoid2f4k.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -25,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "557756877767-274mrq4gkoa2j4jabgi249fcnoid2f4k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
