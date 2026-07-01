@@ -23,10 +23,15 @@ coroutines              = "1.9.0"
 shizuku                 = "13.1.5"
 libsu                   = "6.0.0"
 
+# Firebase (ID pengguna global via Firestore counter)
+googleServices          = "4.5.0"
+firebaseBom             = "34.15.0"
+
 [plugins]
 android-application     = { id = "com.android.application",             version.ref = "agp"    }
 kotlin-android          = { id = "org.jetbrains.kotlin.android",        version.ref = "kotlin" }
 kotlin-compose          = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+google-services         = { id = "com.google.gms.google-services",      version.ref = "googleServices" }
 
 [libraries]
 # ── Core ─────────────────────────────────────────────────────────────────────
@@ -63,5 +68,10 @@ kotlinx-coroutines-android              = { group = "org.jetbrains.kotlinx",    
 shizuku-api                             = { group = "dev.rikka.shizuku",         name = "api",                         version.ref = "shizuku"             }
 shizuku-provider                        = { group = "dev.rikka.shizuku",         name = "provider",                    version.ref = "shizuku"             }
 
-# ── Privilege backends: libsu (root / Magisk / KernelSU / APatch) ───────────
+# ── Privilege backends: root / Magisk / KernelSU / APatch) ───────────
 libsu-core                              = { group = "com.github.topjohnwu.libsu", name = "core",                       version.ref = "libsu"               }
+
+# ── Firebase (ID pengguna global via Firestore counter) ─────────────────────
+firebase-bom                            = { group = "com.google.firebase",        name = "firebase-bom",               version.ref = "firebaseBom"         }
+firebase-analytics                      = { group = "com.google.firebase",        name = "firebase-analytics"                                               }
+firebase-firestore                      = { group = "com.google.firebase",        name = "firebase-firestore"                                               }

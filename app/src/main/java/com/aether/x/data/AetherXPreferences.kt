@@ -89,6 +89,11 @@ class AetherXPreferences(private val context: Context) {
         // status Shizuku/Root di tab Tweak. Dibuat sekali secara acak lalu
         // disimpan permanen di perangkat supaya nilainya konsisten setiap dibuka.
         val USER_ID = intPreferencesKey("user_id")
+
+        // true kalau USER_ID di atas adalah nomor urut ASLI hasil alokasi dari
+        // counter Firestore (lihat UserIdRepository) — bukan sekadar angka acak
+        // fallback lokal yang dibuat saat offline.
+        val USER_ID_SYNCED = booleanPreferencesKey("user_id_synced")
     }
 
     val preferences: Flow<AppPreferences> = context.dataStore.data.map { prefs ->
@@ -214,8 +219,10 @@ class AetherXPreferences(private val context: Context) {
 
     /**
      * Mengambil ID pengguna lokal yang tersimpan, atau membuatnya sekali kalau
-     * belum ada (angka acak 1..99999, ditampilkan sebagai "ID-<angka>"). Sekali
-     * dibuat, nilainya tidak berubah lagi selama data aplikasi tidak dihapus.
+     * belum ada (angka acak 1..99999, ditampilkan sebagai "ID-<angka>"). Ini
+     * dipakai sebagai fallback sementara saat perangkat offline — begitu ada
+     * koneksi, [UserIdRepository] akan menggantinya dengan ID urut asli dari
+     * Firestore lewat [setSyncedUserId].
      */
     suspend fun getOrCreateUserId(): Int {
         val existing = context.dataStore.data.first()[Keys.USER_ID]
@@ -224,5 +231,19 @@ class AetherXPreferences(private val context: Context) {
         val generated = Random.nextInt(1, 100_000)
         context.dataStore.edit { prefs -> prefs[Keys.USER_ID] = generated }
         return generated
+    }
+
+    /** ID urut asli hasil alokasi Firestore, kalau sudah pernah berhasil disinkronkan. */
+    suspend fun getSyncedUserId(): Int? {
+        val prefs = context.dataStore.data.first()
+        return if (prefs[Keys.USER_ID_SYNCED] == true) prefs[Keys.USER_ID] else null
+    }
+
+    /** Menyimpan ID urut asli dari Firestore sebagai nilai permanen ID pengguna. */
+    suspend fun setSyncedUserId(id: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.USER_ID] = id
+            prefs[Keys.USER_ID_SYNCED] = true
+        }
     }
 }

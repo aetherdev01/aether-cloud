@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.services)
 }
 
 // ── Signing config dari local.properties ─────────────────────────────────────
@@ -125,4 +126,9 @@ dependencies {
 
     // ── Privilege backend: libsu (mode root — Magisk / KernelSU / APatch) ───
     implementation(libs.libsu.core)
+
+    // ── Firebase: counter Firestore untuk ID pengguna global berurutan ───────
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.firestore)
 }
