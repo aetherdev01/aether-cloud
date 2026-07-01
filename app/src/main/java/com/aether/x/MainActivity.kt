@@ -99,7 +99,10 @@ private fun AetherXRoot(
             )
         }
         composable(AetherXRoutes.MANAGE_ACCESS) {
-            PermissionSetupScreen(onContinue = { navController.popBackStack() })
+            PermissionSetupScreen(
+                onContinue = { navController.popBackStack() },
+                requireAccessToContinue = false,
+            )
         }
         composable(AetherXRoutes.GUIDE_REVISIT) {
             GuideScreen(onFinish = { navController.popBackStack() })

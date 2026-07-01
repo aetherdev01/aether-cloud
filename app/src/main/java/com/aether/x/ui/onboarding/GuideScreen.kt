@@ -21,12 +21,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.lerp
 import com.aether.x.R
 import kotlinx.coroutines.launch
 
@@ -72,10 +73,20 @@ fun GuideScreen(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                 ) {
+                    val pageOffset = (
+                        (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+                        ).let { kotlin.math.abs(it) }.coerceIn(0f, 1f)
+
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(1.4f)
+                            .graphicsLayer {
+                                val scale = lerp(0.9f, 1f, 1f - pageOffset)
+                                scaleX = scale
+                                scaleY = scale
+                                alpha = lerp(0.4f, 1f, 1f - pageOffset)
+                            }
                             .clip(RoundedCornerShape(28.dp))
                             .background(
                                 Brush.linearGradient(
@@ -85,13 +96,8 @@ fun GuideScreen(
                                     ),
                                 ),
                             ),
-                        contentAlignment = Alignment.Center,
                     ) {
-                        Text(
-                            text = "${page + 1}",
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                        )
+                        GuideIllustration(page = page, modifier = Modifier.fillMaxSize())
                     }
                     Text(
                         text = stringResource(item.title),

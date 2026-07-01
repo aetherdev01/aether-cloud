@@ -6,6 +6,7 @@
     <!-- Onboarding — Setup Permission -->
     <string name="setup_title">Siapkan Akses</string>
     <string name="setup_subtitle">AetherX butuh salah satu akses berikut untuk bisa mengatur sensitivitas sentuh, DPI, dan refresh rate perangkatmu.</string>
+    <string name="setup_required_banner">Wajib diaktifkan salah satu sebelum bisa melanjutkan</string>
     <string name="setup_method_shizuku">Shizuku (Tanpa Root)</string>
     <string name="setup_method_shizuku_desc">Cocok untuk HP yang tidak di-root. Perlu aplikasi Shizuku aktif lewat Wireless Debugging.</string>
     <string name="setup_method_root">Root (Magisk / KernelSU / APatch)</string>
@@ -18,8 +19,8 @@
     <string name="setup_action_open_shizuku">Buka Shizuku</string>
     <string name="setup_action_install_shizuku">Pasang Shizuku</string>
     <string name="setup_action_continue">Lanjutkan</string>
-    <string name="setup_action_skip">Lewati Dulu</string>
-    <string name="setup_skip_warning">Tweak tidak akan bisa diterapkan sebelum salah satu akses di atas aktif.</string>
+    <string name="setup_locked_hint">Aktifkan Shizuku atau Root terlebih dahulu untuk membuka tombol Lanjutkan.</string>
+    <string name="setup_ready_hint">Akses siap. Kamu sudah bisa lanjut ke panduan.</string>
 
     <!-- Onboarding — Guide -->
     <string name="guide_skip">Lewati</string>

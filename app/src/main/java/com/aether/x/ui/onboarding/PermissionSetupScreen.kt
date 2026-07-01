@@ -2,21 +2,33 @@ package com.aether.x.ui.onboarding
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -32,9 +44,11 @@ private const val SHIZUKU_PLAY_STORE_URL =
 @Composable
 fun PermissionSetupScreen(
     onContinue: () -> Unit,
+    requireAccessToContinue: Boolean = true,
 ) {
     val context = LocalContext.current
     val status by PrivilegeManager.status.collectAsStateWithLifecycle()
+    val canContinue = !requireAccessToContinue || status.hasAccess
 
     Scaffold { padding ->
         Column(
@@ -55,6 +69,47 @@ fun PermissionSetupScreen(
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+
+            if (requireAccessToContinue) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(
+                            if (canContinue) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.errorContainer
+                            },
+                        )
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Icon(
+                        imageVector = if (canContinue) Icons.Filled.LockOpen else Icons.Filled.Lock,
+                        contentDescription = null,
+                        tint = if (canContinue) {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onErrorContainer
+                        },
+                    )
+                    Text(
+                        text = if (canContinue) {
+                            stringResource(R.string.setup_ready_hint)
+                        } else {
+                            stringResource(R.string.setup_required_banner)
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (canContinue) {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onErrorContainer
+                        },
+                    )
+                }
+            }
 
             PermissionMethodCard(
                 title = stringResource(R.string.setup_method_shizuku),
@@ -98,15 +153,16 @@ fun PermissionSetupScreen(
             ) {
                 Button(
                     onClick = onContinue,
+                    enabled = canContinue,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(stringResource(R.string.setup_action_continue))
                 }
-                if (!status.hasAccess) {
+                AnimatedVisibility(visible = !canContinue, enter = fadeIn(), exit = fadeOut()) {
                     Text(
-                        text = stringResource(R.string.setup_skip_warning),
+                        text = stringResource(R.string.setup_locked_hint),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = MaterialTheme.colorScheme.error,
                     )
                 }
             }
