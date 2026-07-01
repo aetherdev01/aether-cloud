@@ -17,9 +17,11 @@ import androidx.core.app.NotificationCompat
 import com.aether.x.MainActivity
 import com.aether.x.R
 import com.aether.x.core.apps.GameLauncher
+import com.aether.x.core.monitor.ForegroundAppReader
 import com.aether.x.core.monitor.GfxInfoFpsReader
 import com.aether.x.core.monitor.SystemStatsProvider
 import com.aether.x.core.permission.PrivilegeManager
+import com.aether.x.core.shell.ShellExecutor
 import com.aether.x.data.AetherXPreferences
 import com.aether.x.data.FpsMonitorStyle
 import kotlinx.coroutines.CoroutineScope
@@ -66,7 +68,10 @@ class FpsMonitorOverlayService : Service() {
     private lateinit var preferences: AetherXPreferences
     private lateinit var windowManager: WindowManager
     private lateinit var statsProvider: SystemStatsProvider
+    private val foregroundAppReader = ForegroundAppReader()
     private var fpsReader: GfxInfoFpsReader? = null
+    private var fpsReaderPackage: String? = null
+    private var statsLoopStarted = false
 
     private var monitorView: FpsMonitorView? = null
     private var layoutParams: WindowManager.LayoutParams? = null
@@ -192,23 +197,15 @@ class FpsMonitorOverlayService : Service() {
     }
 
     private fun startStatsLoop() {
-        if (fpsReader != null) return
-
-        // FPS dibaca dari game yang terdeteksi terpasang (Free Fire / Free Fire MAX)
-        // lewat dumpsys gfxinfo, BUKAN dari vsync callback proses AetherX sendiri —
-        // supaya angkanya benar-benar mencerminkan performa render game, bukan Hz layar.
-        val targetPackage = GameLauncher.detectInstalled(applicationContext)
-            .firstOrNull()
-            ?.packageName
-            ?: GameLauncher.PACKAGE_FREE_FIRE
-        fpsReader = GfxInfoFpsReader(targetPackage)
+        if (statsLoopStarted) return
+        statsLoopStarted = true
 
         serviceScope.launch {
             while (true) {
                 monitorView?.let { view ->
                     val executor = PrivilegeManager.getExecutor()
                     view.fps = if (executor != null) {
-                        fpsReader?.readFps(executor) ?: 0
+                        readFpsForForegroundApp(executor)
                     } else {
                         // Tanpa Shizuku/Root, FPS asli tidak bisa dibaca — tampilkan 0
                         // apa adanya daripada memalsukan angka Hz layar.
@@ -222,6 +219,38 @@ class FpsMonitorOverlayService : Service() {
             }
         }
     }
+
+    /**
+     * Deteksi ulang aplikasi yang sedang di foreground di TIAP siklus, lalu baca
+     * FPS render sungguhan untuk package itu lewat `dumpsys gfxinfo`.
+     *
+     * Sebelumnya AetherX hanya mengecek APK mana yang terpasang satu kali saat
+     * overlay pertama kali dinyalakan (lewat [GameLauncher.detectInstalled]) —
+     * kalau game belum dibuka saat itu, atau pengguna sedang di aplikasi lain,
+     * `dumpsys gfxinfo` dijalankan ke package yang tidak sedang merender apapun
+     * sehingga selalu menghasilkan 0. Dengan deteksi foreground berulang, target
+     * pembacaan FPS otomatis mengikuti aplikasi yang benar-benar aktif di layar.
+     */
+    private suspend fun readFpsForForegroundApp(executor: ShellExecutor): Int {
+        val foregroundPackage = foregroundAppReader.readForegroundPackage(executor)
+            ?: fallbackInstalledGamePackage()
+            ?: return 0
+
+        // AetherX sendiri, launcher, atau system UI tidak punya frame game untuk
+        // dibaca — tampilkan 0 apa adanya daripada angka yang menyesatkan.
+        if (foregroundPackage == packageName) return 0
+
+        if (fpsReader == null || fpsReaderPackage != foregroundPackage) {
+            fpsReader = GfxInfoFpsReader(foregroundPackage)
+            fpsReaderPackage = foregroundPackage
+        }
+
+        return fpsReader?.readFps(executor) ?: 0
+    }
+
+    /** Fallback kalau deteksi foreground gagal: pakai game yang terpasang, kalau ada. */
+    private fun fallbackInstalledGamePackage(): String? =
+        GameLauncher.detectInstalled(applicationContext).firstOrNull()?.packageName
 
     private fun observePreferences() {
         preferences.preferences.onEach { prefs ->
@@ -271,6 +300,8 @@ class FpsMonitorOverlayService : Service() {
 
     override fun onDestroy() {
         fpsReader = null
+        fpsReaderPackage = null
+        statsLoopStarted = false
         monitorView?.let { runCatching { windowManager.removeView(it) } }
         monitorView = null
         serviceScope.coroutineContext[Job]?.cancel()
