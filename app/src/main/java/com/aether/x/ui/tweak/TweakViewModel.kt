@@ -27,6 +27,7 @@ data class TweakUiState(
     val gameModeEnabled: Boolean = false,
     val message: String? = null,
     val detectedGames: List<DetectedGame> = emptyList(),
+    val userId: Int? = null,
 )
 
 /**
@@ -62,6 +63,13 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
                     gameModeEnabled = saved.gameModeEnabled,
                 )
             }
+        }
+
+        // ID lokal pengguna (mis. "ID-67128") ditampilkan di header tab Tweak,
+        // menggantikan pill status Shizuku/Root sebelumnya.
+        viewModelScope.launch {
+            val id = preferences.getOrCreateUserId()
+            _state.update { it.copy(userId = id) }
         }
     }
 

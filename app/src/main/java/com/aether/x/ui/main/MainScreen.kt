@@ -18,10 +18,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aether.x.R
-import com.aether.x.ui.components.GameFab
 import com.aether.x.ui.settings.SettingsScreen
 import com.aether.x.ui.tweak.TweakScreen
 import com.aether.x.ui.tweak.TweakViewModel
@@ -35,11 +33,7 @@ fun MainScreen(
 ) {
     var selectedTab by remember { mutableStateOf(MainTab.TWEAK) }
 
-    // ViewModel diangkat ke level ini supaya tombol mengambang (FAB) di sisi kanan
-    // bisa langsung membuka game terdeteksi, terlepas dari posisi scroll di TweakScreen.
     val tweakViewModel: TweakViewModel = viewModel()
-    val tweakState by tweakViewModel.state.collectAsStateWithLifecycle()
-    val firstDetectedGame = tweakState.detectedGames.firstOrNull()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -64,15 +58,6 @@ fun MainScreen(
                     colors = aetherNavColors(),
                 )
             }
-        },
-        floatingActionButton = {
-            GameFab(
-                gameName = firstDetectedGame?.displayName.orEmpty(),
-                visible = selectedTab == MainTab.TWEAK && firstDetectedGame != null,
-                onClick = {
-                    firstDetectedGame?.let { tweakViewModel.launchGame(it.packageName) }
-                },
-            )
         },
     ) { padding ->
         when (selectedTab) {

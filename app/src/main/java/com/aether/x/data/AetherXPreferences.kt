@@ -9,7 +9,9 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlin.random.Random
 
 private val Context.dataStore by preferencesDataStore(name = "aetherx_prefs")
 
@@ -82,6 +84,11 @@ class AetherXPreferences(private val context: Context) {
         val FPS_MONITOR_STYLE = stringPreferencesKey("fps_monitor_style")
         val FPS_MONITOR_OFFSET_X = intPreferencesKey("fps_monitor_offset_x")
         val FPS_MONITOR_OFFSET_Y = intPreferencesKey("fps_monitor_offset_y")
+
+        // ID pengguna lokal (mis. "ID-67128") yang ditampilkan sebagai pengganti
+        // status Shizuku/Root di tab Tweak. Dibuat sekali secara acak lalu
+        // disimpan permanen di perangkat supaya nilainya konsisten setiap dibuka.
+        val USER_ID = intPreferencesKey("user_id")
     }
 
     val preferences: Flow<AppPreferences> = context.dataStore.data.map { prefs ->
@@ -203,5 +210,19 @@ class AetherXPreferences(private val context: Context) {
             prefs[Keys.FPS_MONITOR_OFFSET_X] = offsetX
             prefs[Keys.FPS_MONITOR_OFFSET_Y] = offsetY
         }
+    }
+
+    /**
+     * Mengambil ID pengguna lokal yang tersimpan, atau membuatnya sekali kalau
+     * belum ada (angka acak 1..99999, ditampilkan sebagai "ID-<angka>"). Sekali
+     * dibuat, nilainya tidak berubah lagi selama data aplikasi tidak dihapus.
+     */
+    suspend fun getOrCreateUserId(): Int {
+        val existing = context.dataStore.data.first()[Keys.USER_ID]
+        if (existing != null) return existing
+
+        val generated = Random.nextInt(1, 100_000)
+        context.dataStore.edit { prefs -> prefs[Keys.USER_ID] = generated }
+        return generated
     }
 }

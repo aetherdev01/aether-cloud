@@ -59,9 +59,7 @@
     <string name="nav_settings">Pengaturan</string>
 
     <!-- Tweak screen -->
-    <string name="tweak_status_active_shizuku">Shizuku</string>
-    <string name="tweak_status_active_root">Root</string>
-    <string name="tweak_status_inactive">Tidak Aktif</string>
+    <string name="tweak_user_id_format">ID-%1$d</string>
     <string name="tweak_subtitle">Sesuaikan sensitivitas sentuh dan refresh rate perangkatmu. Perubahan langsung aktif.</string>
     <string name="tweak_section_touch">Sensitivitas Sentuh</string>
     <string name="tweak_pointer_speed">Kecepatan Pointer</string>

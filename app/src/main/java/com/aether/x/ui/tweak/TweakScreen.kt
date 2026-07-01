@@ -33,8 +33,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aether.x.R
-import com.aether.x.core.permission.PrivilegeBackend
-import com.aether.x.core.permission.PrivilegeManager
 import com.aether.x.ui.components.SectionCard
 import com.aether.x.ui.components.StatusPill
 import com.aether.x.ui.components.TweakSlider
@@ -47,7 +45,6 @@ fun TweakScreen(
     viewModel: TweakViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val privilegeStatus by PrivilegeManager.status.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Deteksi ulang game terpasang setiap kali layar Tweak kembali aktif
@@ -76,10 +73,7 @@ fun TweakScreen(
                 .padding(horizontal = 20.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            TweakHeader(
-                activeBackend = privilegeStatus.activeBackend,
-                hasAccess = privilegeStatus.hasAccess,
-            )
+            TweakHeader(userId = state.userId)
 
             SectionCard(title = stringResource(R.string.tweak_section_touch)) {
                 // Nilai diterapkan langsung ke sistem saat slider dilepas (tidak perlu
@@ -147,14 +141,12 @@ fun TweakScreen(
 }
 
 /**
- * Header "hero" di puncak halaman Tweak: judul, subjudul singkat, dan status
- * akses privilese aktif (Shizuku/Root) sebagai pill kecil yang jelas terlihat.
+ * Header "hero" di puncak halaman Tweak: judul, subjudul singkat, dan pill ID
+ * pengguna lokal (mis. "ID-67128") di kanan atas — menggantikan pill status
+ * Shizuku/Root yang dipakai sebelumnya.
  */
 @Composable
-private fun TweakHeader(
-    activeBackend: PrivilegeBackend,
-    hasAccess: Boolean,
-) {
+private fun TweakHeader(userId: Int?) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -173,23 +165,13 @@ private fun TweakHeader(
                 modifier = Modifier.padding(top = 4.dp),
             )
         }
-        StatusPill(
-            text = when (activeBackend) {
-                PrivilegeBackend.SHIZUKU -> stringResource(R.string.tweak_status_active_shizuku)
-                PrivilegeBackend.ROOT -> stringResource(R.string.tweak_status_active_root)
-                PrivilegeBackend.NONE -> stringResource(R.string.tweak_status_inactive)
-            },
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = if (hasAccess) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            },
-            dotColor = if (hasAccess) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                com.aether.x.ui.theme.AccentRed
-            },
-        )
+        if (userId != null) {
+            StatusPill(
+                text = stringResource(R.string.tweak_user_id_format, userId),
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary,
+                dotColor = MaterialTheme.colorScheme.primary,
+            )
+        }
     }
 }
