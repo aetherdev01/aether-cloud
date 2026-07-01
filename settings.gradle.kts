@@ -21,5 +21,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Aether Cloud"
+rootProject.name = "AetherX"
 include(":app")

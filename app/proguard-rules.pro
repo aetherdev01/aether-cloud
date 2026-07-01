@@ -1,11 +1,10 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# AETHER CLOUD — ProGuard / R8 Rules
+# AETHERX — ProGuard / R8 Rules
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # ── R8 Optimisasi ─────────────────────────────────────────────────────────────
 -repackageclasses ''
 -allowaccessmodification
--overloadaggressively
 -optimizationpasses 5
 -optimizations !code/simplification/cast,field/*,class/merging/*,code/allocation/variable
 
@@ -15,13 +14,13 @@
 -renamesourcefileattribute SourceFile
 
 # =============================================================================
-# AETHER CLOUD — CORE
+# AETHERX — CORE
 # =============================================================================
--keep public class com.aether.cloud.MainActivity { <init>(); }
--keep public class com.aether.cloud.AetherApp { <init>(); }
+-keep public class com.aether.x.MainActivity { <init>(); }
+-keep public class com.aether.x.AetherXApp { <init>(); }
 
 # =============================================================================
-# KOTLIN
+# KOTLIN / COROUTINES
 # =============================================================================
 -keep class kotlin.Metadata { *; }
 -keepclassmembernames class kotlinx.coroutines.** { volatile <fields>; }
@@ -33,7 +32,7 @@
 }
 
 # =============================================================================
-# JETPACK COMPOSE
+# JETPACK COMPOSE / NAVIGATION
 # =============================================================================
 -assumenosideeffects class androidx.compose.runtime.ComposerKt {
     void sourceInformation(...);
@@ -43,15 +42,8 @@
     void traceEventStart(...);
     void traceEventEnd();
 }
-
-# =============================================================================
-# ROOM
-# =============================================================================
--keep class * extends androidx.room.RoomDatabase
--keep @androidx.room.Entity class *
--keepclassmembers @androidx.room.Entity class * { *; }
--keep @androidx.room.Dao class * { *; }
--dontwarn androidx.room.**
+-keepclassmembers class androidx.navigation.** { *; }
+-dontwarn androidx.navigation.**
 
 # =============================================================================
 # DATASTORE
@@ -60,61 +52,26 @@
 -dontwarn androidx.datastore.**
 
 # =============================================================================
-# GSON
+# SHIZUKU (rikka.shizuku) — wajib di-keep utuh, sebagian dipanggil lewat
+# reflection (lihat ShizukuProcessCompat) dan lewat AIDL/Binder.
 # =============================================================================
--keep class com.google.gson.** { *; }
--keep class com.aether.cloud.data.model.** { *; }
--dontwarn com.google.gson.**
+-keep class rikka.shizuku.** { *; }
+-keep interface rikka.shizuku.** { *; }
+-keepclassmembers class rikka.shizuku.** { *; }
+-dontwarn rikka.shizuku.**
+-dontwarn moe.shizuku.**
 
 # =============================================================================
-# FIREBASE
+# LIBSU (com.topjohnwu.superuser) — eksekusi shell root
 # =============================================================================
--keep class com.google.firebase.** { *; }
--keep class com.google.android.gms.** { *; }
--dontwarn com.google.firebase.**
--dontwarn com.google.android.gms.**
+-keep class com.topjohnwu.superuser.** { *; }
+-dontwarn com.topjohnwu.superuser.**
 
 # =============================================================================
-# FACEBOOK LOGIN
-# =============================================================================
--keep class com.facebook.** { *; }
--keep interface com.facebook.** { *; }
--keep enum com.facebook.** { *; }
--dontwarn com.facebook.**
-
-# =============================================================================
-# COIL / GLIDE
-# =============================================================================
--keep public class * implements com.bumptech.glide.module.GlideModule
--keep class * extends com.bumptech.glide.module.AppGlideModule { <init>(...); }
--keep public enum com.bumptech.glide.load.ImageHeaderParser$** {
-  **[] $VALUES;
-  public *;
-}
--dontwarn com.bumptech.glide.**
--dontwarn io.coil.kt.**
-
-# =============================================================================
-# UNITY ADS
-# =============================================================================
--keep class com.unity3d.** { *; }
--keep interface com.unity3d.** { *; }
--keep class com.unity3d.services.** { *; }
--keep class com.unity3d.ads.** { *; }
--dontwarn com.unity3d.**
-
-# =============================================================================
-# PARCELABLE / SERIALIZABLE / ENUM
+# PARCELABLE / ENUM
 # =============================================================================
 -keep class * implements android.os.Parcelable {
     public static final android.os.Parcelable$Creator *;
-}
--keepclassmembers class * implements java.io.Serializable {
-    static final long serialVersionUID;
-    private void writeObject(java.io.ObjectOutputStream);
-    private void readObject(java.io.ObjectInputStream);
-    java.lang.Object writeReplace();
-    java.lang.Object readResolve();
 }
 -keepclassmembers enum * {
     public static **[] values();

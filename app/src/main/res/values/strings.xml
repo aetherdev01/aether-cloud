@@ -1,60 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Aether Cloud</string>
-    <string name="title_home">Home</string>
-    <string name="title_upload">Upload</string>
-    <string name="title_settings">Settings</string>
-    <string name="login_with_google">Continue with Google</string>
-    <string name="complete_profile">Set up your profile</string>
-    <string name="profile_subtitle">Tell the community who you are</string>
-    <string name="display_name">Full Name</string>
-    <string name="username">Username</string>
-    <string name="username_helper">This is how others will find you. Letters, numbers, and underscores only.</string>
-    <string name="telegram_channel">Telegram Channel (Optional)</string>
-    <string name="github_url">GitHub Profile (Optional)</string>
-    <string name="website_optional">Website (Optional)</string>
-    <string name="save">Continue</string>
-    <string name="module_name">Module Name *</string>
-    <string name="version">Version *</string>
-    <string name="description">Description *</string>
-    <string name="mirror_url">Mirror URL (Optional)</string>
-    <string name="pick_zip">Pick ZIP File</string>
-    <string name="pick_screenshots">Add Screenshots</string>
-    <string name="upload">Upload Module</string>
-    <string name="root">Root</string>
-    <string name="no_root">No Root</string>
-    <string name="my_modules">My Modules</string>
-    <string name="support">Support</string>
-    <string name="logout">Logout</string>
-    <string name="search_modules">Search modules…</string>
-    <string name="no_modules_found">No modules found</string>
-    <string name="downloads">Downloads</string>
-    <string name="views">Views</string>
-    <string name="comments">Comments</string>
-    <string name="download">Download</string>
-    <string name="comment_hint">Write a comment…</string>
-    <string name="send">Send</string>
-    <string name="default_web_client_id">557756877767-274mrq4gkoa2j4jabgi249fcnoid2f4k.apps.googleusercontent.com</string>
+    <string name="app_name">AetherX</string>
+    <string name="app_tagline">Pelicin Layar untuk Free Fire</string>
 
-    <!-- Onboarding -->
-    <string name="onboarding_skip">Skip</string>
-    <string name="onboarding_next">Next</string>
-    <string name="onboarding_get_started">Get Started</string>
-    <string name="onboarding_title_1">Discover Modules</string>
-    <string name="onboarding_desc_1">Browse and search a growing library of root and no-root modules shared by the community.</string>
-    <string name="onboarding_title_2">Share What You Build</string>
-    <string name="onboarding_desc_2">Upload your own modules with screenshots, version notes, and a description in just a few taps.</string>
-    <string name="onboarding_title_3">Join the Conversation</string>
-    <string name="onboarding_desc_3">Comment on modules, track downloads, and connect with other developers.</string>
+    <!-- Onboarding — Setup Permission -->
+    <string name="setup_title">Siapkan Akses</string>
+    <string name="setup_subtitle">AetherX butuh salah satu akses berikut untuk bisa mengatur sensitivitas sentuh, DPI, dan refresh rate perangkatmu.</string>
+    <string name="setup_method_shizuku">Shizuku (Tanpa Root)</string>
+    <string name="setup_method_shizuku_desc">Cocok untuk HP yang tidak di-root. Perlu aplikasi Shizuku aktif lewat Wireless Debugging.</string>
+    <string name="setup_method_root">Root (Magisk / KernelSU / APatch)</string>
+    <string name="setup_method_root_desc">Cocok untuk HP yang sudah root. AetherX akan meminta izin superuser (su).</string>
+    <string name="setup_status_granted">Aktif</string>
+    <string name="setup_status_not_granted">Belum Aktif</string>
+    <string name="setup_status_checking">Memeriksa…</string>
+    <string name="setup_status_not_installed">Belum Terpasang</string>
+    <string name="setup_action_request">Minta Izin</string>
+    <string name="setup_action_open_shizuku">Buka Shizuku</string>
+    <string name="setup_action_install_shizuku">Pasang Shizuku</string>
+    <string name="setup_action_continue">Lanjutkan</string>
+    <string name="setup_action_skip">Lewati Dulu</string>
+    <string name="setup_skip_warning">Tweak tidak akan bisa diterapkan sebelum salah satu akses di atas aktif.</string>
 
-    <!-- Empty states -->
-    <string name="empty_modules_title">No modules yet</string>
-    <string name="empty_modules_desc">Be the first to share a module with the community.</string>
-    <string name="empty_search_title">No results found</string>
-    <string name="empty_search_desc">Try a different keyword or check your spelling.</string>
-    <string name="empty_my_modules_title">You haven\'t uploaded anything</string>
-    <string name="empty_my_modules_desc">Modules you upload will show up here.</string>
-    <string name="empty_comments_title">No comments yet</string>
-    <string name="empty_comments_desc">Be the first to leave a comment.</string>
+    <!-- Onboarding — Guide -->
+    <string name="guide_skip">Lewati</string>
+    <string name="guide_next">Lanjut</string>
+    <string name="guide_finish">Mulai Pakai</string>
+    <string name="guide_title_1">Selamat Datang di AetherX</string>
+    <string name="guide_body_1">Optimalkan respons sentuhan layar HP kamu sebelum mabar Free Fire. Atur DPI, resolusi, kecepatan pointer, dan refresh rate dalam satu tempat.</string>
+    <string name="guide_title_2">Kenapa Layar Terasa \'Licin\'?</string>
+    <string name="guide_body_2">Menurunkan DPI dan resolusi membuat pemetaan sentuhan ke piksel jadi lebih presisi, sementara refresh rate tinggi membuat gerakan terasa lebih halus dan responsif.</string>
+    <string name="guide_title_3">Aman &amp; Bisa Dikembalikan</string>
+    <string name="guide_body_3">Semua perubahan memakai perintah sistem Android resmi (wm, settings) dan bisa dikembalikan ke pengaturan pabrik kapan saja lewat tombol Reset.</string>
+    <string name="guide_title_4">Siap Tweak</string>
+    <string name="guide_body_4">Buka tab Tweak, geser slider sesuai selera, lalu tekan Terapkan. Hasilnya langsung terasa di sistem, termasuk saat main Free Fire.</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_tweak">Tweak</string>
+    <string name="nav_settings">Pengaturan</string>
+
+    <!-- Tweak screen -->
+    <string name="tweak_status_active_shizuku">Mode aktif: Shizuku</string>
+    <string name="tweak_status_active_root">Mode aktif: Root</string>
+    <string name="tweak_status_inactive">Belum ada akses aktif</string>
+    <string name="tweak_section_touch">Sensitivitas Sentuh</string>
+    <string name="tweak_pointer_speed">Kecepatan Pointer</string>
+    <string name="tweak_pointer_speed_desc">Mengatur respons gerak sentuh sistem (-7 lambat, 7 cepat).</string>
+    <string name="tweak_touch_boost">Touch Sensitivity Boost</string>
+    <string name="tweak_touch_boost_desc">Eksperimental — dampaknya tergantung perangkat.</string>
+    <string name="tweak_section_display">Resolusi &amp; DPI</string>
+    <string name="tweak_dpi">Screen DPI</string>
+    <string name="tweak_dpi_desc">DPI lebih rendah = sentuhan terasa lebih presisi dan ringan.</string>
+    <string name="tweak_width">Lebar Resolusi</string>
+    <string name="tweak_width_desc">Menurunkan resolusi bisa mengurangi beban render saat bermain.</string>
+    <string name="tweak_section_refresh">Refresh Rate</string>
+    <string name="tweak_force_refresh">Paksa Refresh Rate Maksimal</string>
+    <string name="tweak_force_refresh_desc">Mengunci layar pada refresh rate tertinggi yang didukung.</string>
+    <string name="tweak_apply">Terapkan Tweak</string>
+    <string name="tweak_reset">Reset ke Default Pabrik</string>
+    <string name="tweak_applied_toast">Tweak berhasil diterapkan</string>
+    <string name="tweak_reset_toast">Pengaturan dikembalikan ke default</string>
+    <string name="tweak_no_access_toast">Aktifkan Shizuku atau Root dulu di menu Pengaturan</string>
+
+    <!-- Settings screen -->
+    <string name="settings_section_appearance">Tampilan</string>
+    <string name="settings_dynamic_color">Warna Dinamis</string>
+    <string name="settings_dynamic_color_desc">Ambil palet warna dari wallpaper perangkat (Android 12+).</string>
+    <string name="settings_dark_mode">Mode Gelap</string>
+    <string name="settings_dark_mode_system">Ikuti Sistem</string>
+    <string name="settings_dark_mode_light">Terang</string>
+    <string name="settings_dark_mode_dark">Gelap</string>
+    <string name="settings_section_access">Akses Sistem</string>
+    <string name="settings_section_other">Lainnya</string>
+    <string name="settings_view_guide">Lihat Panduan Lagi</string>
+    <string name="settings_about">Tentang AetherX</string>
+    <string name="settings_version">Versi %1$s</string>
+
+    <!-- Generic -->
+    <string name="cd_back">Kembali</string>
+    <string name="cd_app_logo">Logo AetherX</string>
 </resources>
-

@@ -1,0 +1,14 @@
+# ── Salin file ini jadi local.properties dan isi nilainya ────────────────────
+# local.properties TIDAK boleh di-commit ke Git (sudah ada di .gitignore).
+
+# Path ke keystore relatif dari root project
+STORE_FILE=aetherx.jks
+
+# Password keystore
+STORE_PASSWORD=your_store_password
+
+# Nama alias key di dalam keystore
+KEY_ALIAS=aetherx
+
+# Password key
+KEY_PASSWORD=your_key_password

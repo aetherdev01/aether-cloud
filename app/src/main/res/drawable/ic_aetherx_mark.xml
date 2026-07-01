@@ -3,6 +3,8 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- Bolt-X mark: a lightning bolt fused with an X silhouette, representing
+         touch responsiveness ("pelicin layar") and the AetherX brand. -->
     <path
         android:fillColor="#FFFFFF"
         android:pathData="M40,24 L62,24 L50,48 L66,48 L42,84 L48,58 L34,58 Z" />

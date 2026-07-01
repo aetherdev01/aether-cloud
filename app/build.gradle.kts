@@ -2,8 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.google.services)
 }
 
 // ── Signing config dari local.properties ─────────────────────────────────────
@@ -17,20 +15,17 @@ val localProperties = rootProject.file("local.properties")
     ?: emptyMap()
 
 android {
-    namespace   = "com.aether.cloud"
+    namespace   = "com.aether.x"
     compileSdk  = 35
 
     defaultConfig {
-        applicationId = "com.aether.cloud"
-        minSdk        = 24
+        applicationId = "com.aether.x"
+        minSdk        = 26
         targetSdk     = 35
         versionCode   = 1
         versionName   = "1.0.0"
 
-        base.archivesName = "aether-cloud-v$versionName"
-        ndk {
-            abiFilters += setOf("arm64-v8a", "armeabi-v7a")
-        }
+        base.archivesName = "aetherx-v$versionName"
     }
 
     signingConfigs {
@@ -55,6 +50,9 @@ android {
                 "proguard-rules.pro"
             )
         }
+        debug {
+            applicationIdSuffix = ".debug"
+        }
     }
 
     compileOptions {
@@ -73,7 +71,6 @@ android {
     buildFeatures {
         compose     = true
         buildConfig = true
-        viewBinding = true
     }
 
     packaging {
@@ -107,52 +104,23 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.material3)
-    implementation(libs.material)
     implementation(libs.androidx.material.icons.extended)
     debugImplementation(libs.androidx.ui.tooling)
 
     // ── Activity & Navigation ─────────────────────────────────────────────────
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.navigation.fragment)
-    implementation(libs.androidx.navigation.ui)
 
-    // ── DataStore ─────────────────────────────────────────────────────────────
+    // ── DataStore (penyimpanan preferensi tweak & onboarding) ────────────────
     implementation(libs.androidx.datastore.preferences)
-
-    // ── UI Extras ─────────────────────────────────────────────────────────────
-    implementation(libs.androidx.viewpager2)
-    implementation(libs.androidx.swiperefreshlayout)
-    implementation(libs.shimmer)
-
-    // ── Room ──────────────────────────────────────────────────────────────────
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
-    ksp(libs.room.compiler)
 
     // ── Coroutines ────────────────────────────────────────────────────────────
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.kotlinx.coroutines.play.services)
 
-    // ── Image Loading ─────────────────────────────────────────────────────────
-    implementation(libs.coil.compose)
-    implementation(libs.glide)
+    // ── Privilege backend: Shizuku (mode non-root) ───────────────────────────
+    implementation(libs.shizuku.api)
+    implementation(libs.shizuku.provider)
 
-    // ── Accompanist ───────────────────────────────────────────────────────────
-    implementation(libs.accompanist.systemuicontroller)
-
-    // ── Utils ─────────────────────────────────────────────────────────────────
-    implementation(libs.gson)
-
-    // ── Firebase ──────────────────────────────────────────────────────────────
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.auth.ktx)
-    implementation(libs.firebase.firestore.ktx)
-    implementation(libs.firebase.storage.ktx)
-
-    // ── Google Sign-In ────────────────────────────────────────────────────────
-    implementation(libs.play.services.auth)
-
-    // ── Ads ───────────────────────────────────────────────────────────────────
-    implementation(libs.unity.ads)
+    // ── Privilege backend: libsu (mode root — Magisk / KernelSU / APatch) ───
+    implementation(libs.libsu.core)
 }
