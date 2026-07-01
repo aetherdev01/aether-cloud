@@ -34,6 +34,10 @@ private val fpsStyleOptions = listOf(
     FpsStyleOption(FpsMonitorStyle.CLASSIC, R.string.fps_monitor_style_classic, R.string.fps_monitor_style_classic_desc),
 )
 
+// Saklar fitur: Monitor FPS masih dalam pengembangan, jadi UI-nya ditampilkan
+// terkunci (disabled) sampai fitur ini resmi dibuka. Ubah ke true untuk unlock.
+private const val FPS_MONITOR_FEATURE_UNLOCKED = false
+
 @Composable
 fun FpsMonitorSettingsSection(
     enabled: Boolean,
@@ -44,11 +48,14 @@ fun FpsMonitorSettingsSection(
     onRequestOverlayPermission: () -> Unit,
     onStyleChange: (FpsMonitorStyle) -> Unit,
 ) {
+    // Fitur Monitor FPS sementara dikunci — switch dinonaktifkan dan seluruh
+    // opsi lanjutan (gaya tampilan, dsb.) disembunyikan sampai fitur dibuka lagi.
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         TweakSwitch(
             label = stringResource(R.string.fps_monitor_enable),
-            description = stringResource(R.string.fps_monitor_enable_desc),
-            checked = enabled,
+            description = stringResource(R.string.fps_monitor_locked_desc),
+            checked = FPS_MONITOR_FEATURE_UNLOCKED && enabled,
+            enabled = FPS_MONITOR_FEATURE_UNLOCKED,
             onCheckedChange = { checked ->
                 if (checked && !overlayPermissionGranted) {
                     onRequestOverlayPermission()
@@ -58,7 +65,7 @@ fun FpsMonitorSettingsSection(
             },
         )
 
-        if (!overlayPermissionGranted) {
+        if (FPS_MONITOR_FEATURE_UNLOCKED && !overlayPermissionGranted) {
             Text(
                 text = stringResource(R.string.fps_monitor_permission_needed),
                 style = MaterialTheme.typography.bodySmall,
@@ -66,7 +73,7 @@ fun FpsMonitorSettingsSection(
             )
         }
 
-        if (enabled) {
+        if (FPS_MONITOR_FEATURE_UNLOCKED && enabled) {
             Column {
                 Text(
                     text = stringResource(R.string.fps_monitor_style_label),

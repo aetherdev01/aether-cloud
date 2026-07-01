@@ -25,7 +25,6 @@ enum class TemperatureUnit { CELSIUS, FAHRENHEIT }
 
 data class AppPreferences(
     val onboardingCompleted: Boolean = false,
-    val dynamicColorEnabled: Boolean = false,
     val darkModePref: DarkModePref = DarkModePref.SYSTEM,
     val temperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS,
     val dpiValue: Int = -1,
@@ -60,7 +59,6 @@ class AetherXPreferences(private val context: Context) {
 
     private object Keys {
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
-        val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color_enabled")
         val DARK_MODE = stringPreferencesKey("dark_mode_pref")
         val TEMPERATURE_UNIT = stringPreferencesKey("temperature_unit")
         val DPI_VALUE = intPreferencesKey("dpi_value")
@@ -104,7 +102,6 @@ class AetherXPreferences(private val context: Context) {
     val preferences: Flow<AppPreferences> = context.dataStore.data.map { prefs ->
         AppPreferences(
             onboardingCompleted = prefs[Keys.ONBOARDING_COMPLETED] ?: false,
-            dynamicColorEnabled = prefs[Keys.DYNAMIC_COLOR] ?: false,
             darkModePref = prefs[Keys.DARK_MODE]?.let { runCatching { DarkModePref.valueOf(it) }.getOrNull() }
                 ?: DarkModePref.SYSTEM,
             temperatureUnit = prefs[Keys.TEMPERATURE_UNIT]
@@ -139,10 +136,6 @@ class AetherXPreferences(private val context: Context) {
 
     suspend fun setOnboardingCompleted(value: Boolean) {
         context.dataStore.edit { it[Keys.ONBOARDING_COMPLETED] = value }
-    }
-
-    suspend fun setDynamicColorEnabled(value: Boolean) {
-        context.dataStore.edit { it[Keys.DYNAMIC_COLOR] = value }
     }
 
     suspend fun setDarkModePref(value: DarkModePref) {

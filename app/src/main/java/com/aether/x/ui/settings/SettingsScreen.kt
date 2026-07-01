@@ -86,13 +86,6 @@ fun SettingsScreen(
         )
 
         SectionCard(title = stringResource(R.string.settings_section_appearance)) {
-            TweakSwitch(
-                label = stringResource(R.string.settings_dynamic_color),
-                description = stringResource(R.string.settings_dynamic_color_desc),
-                checked = prefs.dynamicColorEnabled,
-                onCheckedChange = viewModel::setDynamicColorEnabled,
-            )
-
             Column {
                 Text(text = stringResource(R.string.settings_dark_mode), style = MaterialTheme.typography.bodyLarge)
                 SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {

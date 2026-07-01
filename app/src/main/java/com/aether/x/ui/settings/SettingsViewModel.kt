@@ -29,10 +29,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         initialValue = AppPreferences(),
     )
 
-    fun setDynamicColorEnabled(enabled: Boolean) {
-        viewModelScope.launch { preferences.setDynamicColorEnabled(enabled) }
-    }
-
     fun setDarkModePref(pref: DarkModePref) {
         viewModelScope.launch { preferences.setDarkModePref(pref) }
     }

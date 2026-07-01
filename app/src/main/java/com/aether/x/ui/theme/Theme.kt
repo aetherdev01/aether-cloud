@@ -1,17 +1,13 @@
 package com.aether.x.ui.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 // Skema gelap kustom AetherX — dasar hitam pekat + aksen biru pucat,
@@ -70,24 +66,15 @@ private val AetherXShapes = Shapes(
  *
  * UI direwrite total mengikuti referensi desain: dasar gelap pekat + aksen
  * biru pucat, tipografi tebal, kartu besar dengan sudut membulat. Dynamic
- * color (Material You) dimatikan secara default supaya tampilan tidak lagi
- * mengikuti wallpaper sistem dan konsisten dengan identitas AetherX.
+ * color (Material You) telah dihapus sepenuhnya supaya tampilan konsisten
+ * dengan identitas AetherX dan tidak mengikuti wallpaper sistem.
  */
 @Composable
 fun AetherXTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    useDynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    val context = LocalContext.current
-    val dynamicAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-
-    val colorScheme = when {
-        useDynamicColor && dynamicAvailable && darkTheme -> dynamicDarkColorScheme(context)
-        useDynamicColor && dynamicAvailable && !darkTheme -> dynamicLightColorScheme(context)
-        darkTheme -> AetherXDarkScheme
-        else -> AetherXLightScheme
-    }
+    val colorScheme = if (darkTheme) AetherXDarkScheme else AetherXLightScheme
 
     MaterialTheme(
         colorScheme = colorScheme,

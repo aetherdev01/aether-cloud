@@ -85,15 +85,12 @@
 
     <!-- Tweak screen — game launcher (floating button) -->
     <string name="tweak_fab_open_game">Buka %1$s</string>
-    <string name="tweak_game_open">Buka</string>
     <string name="tweak_game_none_installed">Free Fire atau Free Fire MAX tidak terdeteksi di perangkat ini.</string>
     <string name="tweak_game_launch_failed">Gagal membuka game — coba buka manual lewat launcher.</string>
 
 
     <!-- Settings screen -->
     <string name="settings_section_appearance">Tampilan</string>
-    <string name="settings_dynamic_color">Warna Dinamis</string>
-    <string name="settings_dynamic_color_desc">Ambil palet warna dari wallpaper perangkat (Android 12+).</string>
     <string name="settings_dark_mode">Mode Gelap</string>
     <string name="settings_dark_mode_system">Ikuti Sistem</string>
     <string name="settings_dark_mode_light">Terang</string>
@@ -104,6 +101,7 @@
     <string name="settings_section_fps_monitor">Monitor FPS ( Beta )</string>
     <string name="fps_monitor_enable">Tampilkan Monitor FPS</string>
     <string name="fps_monitor_enable_desc">Overlay kecil yang menampilkan FPS, CPU, GPU, dan suhu perangkat secara real-time.</string>
+    <string name="fps_monitor_locked_desc">Fitur ini sementara dikunci dan belum bisa digunakan. Segera hadir.</string>
     <string name="fps_monitor_permission_needed">Butuh izin "Tampil di atas aplikasi lain". Ketuk saklar di atas untuk membuka pengaturan izin.</string>
     <string name="fps_monitor_style_label">Gaya Tampilan</string>
     <string name="fps_monitor_style_rog">Gaya ROG</string>

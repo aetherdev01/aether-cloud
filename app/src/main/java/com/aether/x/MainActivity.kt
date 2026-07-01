@@ -61,7 +61,6 @@ class MainActivity : ComponentActivity() {
                 }
                 AetherXTheme(
                     darkTheme = darkTheme,
-                    useDynamicColor = prefsValue.dynamicColorEnabled,
                 ) {
                     AetherXRoot(
                         onboardingCompleted = prefsValue.onboardingCompleted,

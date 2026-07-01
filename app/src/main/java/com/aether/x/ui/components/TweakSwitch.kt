@@ -33,9 +33,11 @@ fun TweakSwitch(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
+    enabled: Boolean = true,
 ) {
     val haptic = LocalHapticFeedback.current
     val hapticEnabled = LocalHapticEnabled.current
+    val contentAlpha = if (enabled) 1f else 0.4f
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.Top,
@@ -44,7 +46,7 @@ fun TweakSwitch(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = contentAlpha),
                 modifier = Modifier
                     .padding(top = 2.dp)
                     .size(30.dp),
@@ -55,18 +57,19 @@ fun TweakSwitch(
             Text(
                 text = label,
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = contentAlpha),
             )
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = contentAlpha),
                 modifier = Modifier.padding(top = 4.dp, end = 8.dp),
             )
         }
         Spacer(modifier = Modifier.width(8.dp))
         Switch(
             checked = checked,
+            enabled = enabled,
             onCheckedChange = { value ->
                 haptic.performIfEnabled(hapticEnabled, HapticFeedbackType.LongPress)
                 onCheckedChange(value)
