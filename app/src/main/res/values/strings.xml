@@ -92,14 +92,13 @@
     <string name="fps_monitor_notification_channel">Overlay Monitor FPS</string>
     <string name="fps_monitor_notification_title">Monitor FPS AetherX aktif</string>
     <string name="fps_monitor_notification_text">Ketuk untuk membuka pengaturan Monitor FPS</string>
-    <string name="settings_view_guide">Lihat Panduan Lagi</string>
-    <string name="settings_manage_access">Kelola Akses Shizuku / Root</string>
     <string name="settings_section_about">Tentang</string>
-    <string name="settings_maintainer">Maintainer</string>
     <string name="settings_maintainer_name">Aldi Ahmad Khoirudin</string>
     <string name="settings_maintainer_handle">@AetherDev22</string>
-    <string name="settings_about">Tentang AetherX</string>
-    <string name="settings_version">Versi %1$s</string>
+    <string name="settings_maintainer_initial">A</string>
+    <string name="settings_about">AetherX</string>
+    <string name="settings_about_tagline">Tweak performa &amp; overlay untuk gaming</string>
+    <string name="settings_version">v%1$s</string>
 
     <!-- Crosshair overlay -->
     <string name="crosshair_enable">Tampilkan Crosshair</string>
