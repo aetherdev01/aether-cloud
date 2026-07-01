@@ -231,6 +231,7 @@ class FpsMonitorOverlayService : Service() {
             if (view.style != prefs.fpsMonitorStyle) {
                 view.style = prefs.fpsMonitorStyle
             }
+            view.temperatureUnit = prefs.temperatureUnit
             currentStyle = prefs.fpsMonitorStyle
 
             applyGravityAndPosition(params, prefs.fpsMonitorStyle, prefs.fpsMonitorOffsetX, prefs.fpsMonitorOffsetY)

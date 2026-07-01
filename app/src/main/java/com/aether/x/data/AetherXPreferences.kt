@@ -19,10 +19,19 @@ enum class CrosshairStyle { CROSS, DOT, CIRCLE, CIRCLE_DOT, PLUS_GAP, X_SHAPE }
 
 enum class FpsMonitorStyle { ROG, CLASSIC }
 
+/** SYSTEM mengikuti bahasa perangkat; ID/EN memaksa bahasa tertentu lewat
+ *  AppCompatDelegate.setApplicationLocales, terlepas dari bahasa sistem. */
+enum class LanguagePref { SYSTEM, INDONESIAN, ENGLISH }
+
+enum class TemperatureUnit { CELSIUS, FAHRENHEIT }
+
 data class AppPreferences(
     val onboardingCompleted: Boolean = false,
     val dynamicColorEnabled: Boolean = true,
     val darkModePref: DarkModePref = DarkModePref.SYSTEM,
+    val languagePref: LanguagePref = LanguagePref.SYSTEM,
+    val temperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS,
+    val hapticFeedbackEnabled: Boolean = true,
     val dpiValue: Int = -1,
     val widthValue: Int = -1,
     val pointerSpeed: Int = 0,
@@ -54,6 +63,9 @@ class AetherXPreferences(private val context: Context) {
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color_enabled")
         val DARK_MODE = stringPreferencesKey("dark_mode_pref")
+        val LANGUAGE = stringPreferencesKey("language_pref")
+        val TEMPERATURE_UNIT = stringPreferencesKey("temperature_unit")
+        val HAPTIC_FEEDBACK = booleanPreferencesKey("haptic_feedback_enabled")
         val DPI_VALUE = intPreferencesKey("dpi_value")
         val WIDTH_VALUE = intPreferencesKey("width_value")
         val POINTER_SPEED = intPreferencesKey("pointer_speed")
@@ -84,6 +96,12 @@ class AetherXPreferences(private val context: Context) {
             dynamicColorEnabled = prefs[Keys.DYNAMIC_COLOR] ?: true,
             darkModePref = prefs[Keys.DARK_MODE]?.let { runCatching { DarkModePref.valueOf(it) }.getOrNull() }
                 ?: DarkModePref.SYSTEM,
+            languagePref = prefs[Keys.LANGUAGE]?.let { runCatching { LanguagePref.valueOf(it) }.getOrNull() }
+                ?: LanguagePref.SYSTEM,
+            temperatureUnit = prefs[Keys.TEMPERATURE_UNIT]
+                ?.let { runCatching { TemperatureUnit.valueOf(it) }.getOrNull() }
+                ?: TemperatureUnit.CELSIUS,
+            hapticFeedbackEnabled = prefs[Keys.HAPTIC_FEEDBACK] ?: true,
             dpiValue = prefs[Keys.DPI_VALUE] ?: -1,
             widthValue = prefs[Keys.WIDTH_VALUE] ?: -1,
             pointerSpeed = prefs[Keys.POINTER_SPEED] ?: 0,
@@ -118,6 +136,18 @@ class AetherXPreferences(private val context: Context) {
 
     suspend fun setDarkModePref(value: DarkModePref) {
         context.dataStore.edit { it[Keys.DARK_MODE] = value.name }
+    }
+
+    suspend fun setLanguagePref(value: LanguagePref) {
+        context.dataStore.edit { it[Keys.LANGUAGE] = value.name }
+    }
+
+    suspend fun setTemperatureUnit(value: TemperatureUnit) {
+        context.dataStore.edit { it[Keys.TEMPERATURE_UNIT] = value.name }
+    }
+
+    suspend fun setHapticFeedbackEnabled(value: Boolean) {
+        context.dataStore.edit { it[Keys.HAPTIC_FEEDBACK] = value }
     }
 
     suspend fun saveTweakState(

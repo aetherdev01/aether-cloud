@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.view.View
 import com.aether.x.data.FpsMonitorStyle
+import com.aether.x.data.TemperatureUnit
 
 /**
  * View kustom yang menggambar panel Monitor FPS, dengan dua gaya visual:
@@ -38,6 +39,22 @@ class FpsMonitorView(context: Context) : View(context) {
 
     var temperatureCelsius: Float? = null
         set(value) { field = value; invalidate() }
+
+    /** Satuan tampilan suhu. Nilai sumber selalu disimpan dalam Celsius
+     *  ([temperatureCelsius]); konversi hanya terjadi saat digambar. */
+    var temperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS
+        set(value) { field = value; invalidate() }
+
+    private fun formattedTemperature(): String {
+        val celsius = temperatureCelsius ?: return when (temperatureUnit) {
+            TemperatureUnit.CELSIUS -> "-°C"
+            TemperatureUnit.FAHRENHEIT -> "-°F"
+        }
+        return when (temperatureUnit) {
+            TemperatureUnit.CELSIUS -> "${celsius.toInt()}°C"
+            TemperatureUnit.FAHRENHEIT -> "${(celsius * 9f / 5f + 32f).toInt()}°F"
+        }
+    }
 
     private val density = context.resources.displayMetrics.density
     private fun dp(value: Float) = value * density
@@ -118,9 +135,7 @@ class FpsMonitorView(context: Context) : View(context) {
         smallTextPaint.textSize = dp(9f)
         val cpuText = "CPU ${cpuPercent?.let { "$it%" } ?: "-"}"
         val gpuText = "GPU ${gpuPercent?.let { "$it%" } ?: "-"}"
-        val tempText = temperatureCelsius?.let { "${it.toInt()}°C" } ?: "-°C"
-
-        val lineY = dp(33f)
+        val tempText = formattedTemperature()
         var x = leftPad
         canvas.drawText(cpuText, x, lineY, smallTextPaint)
         x += smallTextPaint.measureText(cpuText) + dp(7f)
@@ -147,7 +162,7 @@ class FpsMonitorView(context: Context) : View(context) {
 
         val fpsText = "$fps FPS"
         val cpuText = cpuPercent?.let { "CPU $it%" } ?: "CPU -"
-        val tempText = temperatureCelsius?.let { "${it.toInt()}°C" } ?: "-°C"
+        val tempText = formattedTemperature()
 
         val padding = dp(10f)
         val baseline = h / 2f + dp(3.8f)

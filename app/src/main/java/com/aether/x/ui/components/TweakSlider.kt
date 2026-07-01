@@ -12,6 +12,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
@@ -27,6 +29,8 @@ fun TweakSlider(
     modifier: Modifier = Modifier,
     onValueChangeFinished: (() -> Unit)? = null,
 ) {
+    val haptic = LocalHapticFeedback.current
+    val hapticEnabled = LocalHapticEnabled.current
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -50,7 +54,10 @@ fun TweakSlider(
         Slider(
             value = value,
             onValueChange = onValueChange,
-            onValueChangeFinished = onValueChangeFinished,
+            onValueChangeFinished = {
+                haptic.performIfEnabled(hapticEnabled, HapticFeedbackType.LongPress)
+                onValueChangeFinished?.invoke()
+            },
             valueRange = range,
             steps = steps,
             colors = SliderDefaults.colors(

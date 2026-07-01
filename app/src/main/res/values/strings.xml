@@ -100,6 +100,22 @@
     <string name="settings_about_tagline">Tweak performa &amp; overlay untuk gaming</string>
     <string name="settings_version">v%1$s</string>
 
+    <!-- Settings — Bahasa -->
+    <string name="settings_section_language">Bahasa</string>
+    <string name="settings_language_label">Bahasa Aplikasi</string>
+    <string name="settings_language_indonesian">Indonesia</string>
+    <string name="settings_language_english">Inggris</string>
+
+    <!-- Settings — Satuan suhu -->
+    <string name="settings_temperature_unit_label">Satuan Suhu</string>
+    <string name="settings_temperature_unit_celsius">Celsius (°C)</string>
+    <string name="settings_temperature_unit_fahrenheit">Fahrenheit (°F)</string>
+
+    <!-- Settings — Haptic -->
+    <string name="settings_section_interaction">Interaksi</string>
+    <string name="settings_haptic_feedback">Getaran Umpan Balik</string>
+    <string name="settings_haptic_feedback_desc">Getaran halus saat mengetuk saklar dan tombol.</string>
+
     <!-- Crosshair overlay -->
     <string name="crosshair_enable">Tampilkan Crosshair</string>
     <string name="crosshair_enable_desc">Overlay bidik di tengah layar, mirip fitur Game Booster atau PUBG.</string>

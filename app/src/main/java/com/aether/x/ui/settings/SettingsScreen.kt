@@ -40,6 +40,8 @@ import com.aether.x.BuildConfig
 import com.aether.x.R
 import com.aether.x.core.permission.PrivilegeManager
 import com.aether.x.data.DarkModePref
+import com.aether.x.data.LanguagePref
+import com.aether.x.data.TemperatureUnit
 import com.aether.x.ui.components.SectionCard
 import com.aether.x.ui.components.TweakSwitch
 
@@ -104,6 +106,62 @@ fun SettingsScreen(
                     }
                 }
             }
+        }
+
+        SectionCard(title = stringResource(R.string.settings_section_language)) {
+            Column {
+                Text(
+                    text = stringResource(R.string.settings_language_label),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                    val options = listOf(
+                        LanguagePref.SYSTEM to stringResource(R.string.settings_dark_mode_system),
+                        LanguagePref.INDONESIAN to stringResource(R.string.settings_language_indonesian),
+                        LanguagePref.ENGLISH to stringResource(R.string.settings_language_english),
+                    )
+                    options.forEachIndexed { index, (pref, label) ->
+                        SegmentedButton(
+                            shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
+                            selected = prefs.languagePref == pref,
+                            onClick = { viewModel.setLanguagePref(pref) },
+                        ) {
+                            Text(label)
+                        }
+                    }
+                }
+            }
+
+            Column {
+                Text(
+                    text = stringResource(R.string.settings_temperature_unit_label),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                    val options = listOf(
+                        TemperatureUnit.CELSIUS to stringResource(R.string.settings_temperature_unit_celsius),
+                        TemperatureUnit.FAHRENHEIT to stringResource(R.string.settings_temperature_unit_fahrenheit),
+                    )
+                    options.forEachIndexed { index, (unit, label) ->
+                        SegmentedButton(
+                            shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
+                            selected = prefs.temperatureUnit == unit,
+                            onClick = { viewModel.setTemperatureUnit(unit) },
+                        ) {
+                            Text(label)
+                        }
+                    }
+                }
+            }
+        }
+
+        SectionCard(title = stringResource(R.string.settings_section_interaction)) {
+            TweakSwitch(
+                label = stringResource(R.string.settings_haptic_feedback),
+                description = stringResource(R.string.settings_haptic_feedback_desc),
+                checked = prefs.hapticFeedbackEnabled,
+                onCheckedChange = viewModel::setHapticFeedbackEnabled,
+            )
         }
 
         SectionCard(title = stringResource(R.string.settings_section_crosshair)) {
