@@ -73,14 +73,12 @@ class AetherXPreferences(private val context: Context) {
 
     suspend fun saveTweakState(
         dpiValue: Int,
-        widthValue: Int,
         pointerSpeed: Int,
         touchBoostEnabled: Boolean,
         forceMaxRefreshRate: Boolean,
     ) {
         context.dataStore.edit { prefs ->
             prefs[Keys.DPI_VALUE] = dpiValue
-            prefs[Keys.WIDTH_VALUE] = widthValue
             prefs[Keys.POINTER_SPEED] = pointerSpeed
             prefs[Keys.TOUCH_BOOST] = touchBoostEnabled
             prefs[Keys.FORCE_REFRESH] = forceMaxRefreshRate

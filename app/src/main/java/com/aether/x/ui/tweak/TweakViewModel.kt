@@ -19,19 +19,30 @@ import kotlinx.coroutines.launch
 data class TweakUiState(
     val displayInfo: DisplayInfo = DisplayInfo(1080, 2400, 420, listOf(60f)),
     val dpi: Int = 420,
-    val width: Int = 1080,
     val pointerSpeed: Int = 0,
     val touchBoost: Boolean = false,
     val forceMaxRefreshRate: Boolean = false,
     val applying: Boolean = false,
     val message: String? = null,
 ) {
-    val minDpi: Int get() = (displayInfo.densityDpi - 200).coerceAtLeast(160)
-    val maxDpi: Int get() = displayInfo.densityDpi
-    val minWidth: Int get() = (displayInfo.widthPx * 0.55f).toInt()
-    val maxWidth: Int get() = displayInfo.widthPx
-    val projectedHeight: Int
-        get() = (width * displayInfo.aspectRatio).toInt().let { if (it % 2 != 0) it + 1 else it }
+    // DPI lebih besar = tampilan lebih "licin"/rapat (UI mengecil, elemen lebih tajam dan padat).
+    // DPI lebih kecil = tampilan lebih lebar/renggang (UI membesar).
+    // Rentang dibatasi supaya tidak sampai bikin UI pecah di banyak perangkat.
+    val minDpi: Int get() = (displayInfo.densityDpi * 0.7f).toInt().coerceAtLeast(120)
+    val maxDpi: Int get() = (displayInfo.densityDpi * 1.6f).toInt()
+
+    // Resolusi fisik (wm size) TIDAK diubah sama sekali oleh tweak DPI.
+    // Nilai wm size mengikuti resolusi asli layar apa adanya; hanya densitas (wm density)
+    // yang diubah. Ini yang membuat efeknya konsisten: DPI naik -> elemen UI mengecil/rapat,
+    // DPI turun -> elemen UI membesar/renggang. Tidak ada lagi slider "lebar" terpisah yang
+    // bentrok secara matematis dengan slider DPI.
+    val widthPx: Int get() = displayInfo.widthPx
+    val heightPx: Int get() = displayInfo.heightPx
+
+    // Perkiraan lebar layar dalam dp pada DPI yang dipilih, seperti yang akan terlihat
+    // di Opsi Pengembang -> Ukuran tampilan minimum / Smallest width.
+    val projectedWidthDp: Int
+        get() = (widthPx.toFloat() * 160f / dpi.toFloat()).toInt()
 }
 
 class TweakViewModel(application: Application) : AndroidViewModel(application) {
@@ -44,14 +55,13 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         val displayInfo = DisplayInfoProvider.read(application)
-        _state.update { it.copy(displayInfo = displayInfo, dpi = displayInfo.densityDpi, width = displayInfo.widthPx) }
+        _state.update { it.copy(displayInfo = displayInfo, dpi = displayInfo.densityDpi) }
 
         viewModelScope.launch {
             val saved = preferences.preferences.first()
             _state.update { current ->
                 current.copy(
                     dpi = if (saved.dpiValue > 0) saved.dpiValue else current.dpi,
-                    width = if (saved.widthValue > 0) saved.widthValue else current.width,
                     pointerSpeed = saved.pointerSpeed,
                     touchBoost = saved.touchBoostEnabled,
                     forceMaxRefreshRate = saved.forceMaxRefreshRate,
@@ -60,12 +70,14 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /** Diisi dari input manual (TextField), bukan hanya slider, agar DPI bisa diketik langsung. */
     fun onDpiChange(value: Float) {
-        _state.update { it.copy(dpi = value.toInt()) }
+        _state.update { it.copy(dpi = value.toInt().coerceIn(it.minDpi, it.maxDpi)) }
     }
 
-    fun onWidthChange(value: Float) {
-        _state.update { it.copy(width = value.toInt()) }
+    fun onDpiTextChange(text: String) {
+        val parsed = text.toIntOrNull() ?: return
+        _state.update { it.copy(dpi = parsed.coerceIn(it.minDpi, it.maxDpi)) }
     }
 
     fun onPointerSpeedChange(value: Float) {
@@ -94,13 +106,11 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
             _state.update { it.copy(applying = true) }
             val s = _state.value
             repository.applyDensity(executor, s.dpi)
-            repository.applySize(executor, s.width, s.projectedHeight)
             repository.applyPointerSpeed(executor, s.pointerSpeed)
             repository.applyTouchBoost(executor, s.touchBoost)
             repository.applyRefreshRate(executor, s.forceMaxRefreshRate, s.displayInfo.maxRefreshRate)
             preferences.saveTweakState(
                 dpiValue = s.dpi,
-                widthValue = s.width,
                 pointerSpeed = s.pointerSpeed,
                 touchBoostEnabled = s.touchBoost,
                 forceMaxRefreshRate = s.forceMaxRefreshRate,
@@ -114,13 +124,15 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
             _state.update { it.copy(applying = true) }
             val executor = PrivilegeManager.getExecutor()
             if (executor != null) {
-                repository.resetAll(executor)
+                repository.resetDensity(executor)
+                repository.applyPointerSpeed(executor, 0)
+                repository.applyTouchBoost(executor, false)
+                repository.applyRefreshRate(executor, enabled = false, maxHz = 60f)
             }
             preferences.clearTweakState()
             _state.update {
                 it.copy(
                     dpi = it.displayInfo.densityDpi,
-                    width = it.displayInfo.widthPx,
                     pointerSpeed = 0,
                     touchBoost = false,
                     forceMaxRefreshRate = false,

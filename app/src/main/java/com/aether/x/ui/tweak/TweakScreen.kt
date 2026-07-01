@@ -10,20 +10,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -44,6 +49,13 @@ fun TweakScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val privilegeStatus by PrivilegeManager.status.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    var dpiInput by remember { mutableStateOf(state.dpi.toString()) }
+
+    LaunchedEffect(state.dpi) {
+        if (state.dpi.toString() != dpiInput) {
+            dpiInput = state.dpi.toString()
+        }
+    }
 
     LaunchedEffect(state.message) {
         state.message?.let {
@@ -113,14 +125,36 @@ fun TweakScreen(
                     steps = ((state.maxDpi - state.minDpi) / 8).coerceAtLeast(1) - 1,
                     onValueChange = viewModel::onDpiChange,
                 )
-                TweakSlider(
-                    label = stringResource(R.string.tweak_width),
-                    description = stringResource(R.string.tweak_width_desc),
-                    valueText = "${state.width} × ${state.projectedHeight}px",
-                    value = state.width.toFloat(),
-                    range = state.minWidth.toFloat()..state.maxWidth.toFloat(),
-                    steps = ((state.maxWidth - state.minWidth) / 20).coerceAtLeast(1) - 1,
-                    onValueChange = viewModel::onWidthChange,
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    OutlinedTextField(
+                        value = dpiInput,
+                        onValueChange = { text ->
+                            dpiInput = text.filter { it.isDigit() }
+                            viewModel.onDpiTextChange(dpiInput)
+                        },
+                        label = { Text(stringResource(R.string.tweak_dpi_manual_label)) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.tweak_width_projected,
+                            state.projectedWidthDp,
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                Text(
+                    text = stringResource(R.string.tweak_dpi_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 

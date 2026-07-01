@@ -134,12 +134,26 @@ fun PermissionSetupScreen(
                 },
             )
 
+            if (!status.hasAccess) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Text(
+                        text = stringResource(R.string.setup_or_divider),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
             PermissionMethodCard(
                 title = stringResource(R.string.setup_method_root),
                 description = stringResource(R.string.setup_method_root_desc),
                 statusText = when {
                     status.checkingRoot -> stringResource(R.string.setup_status_checking)
                     status.rootGranted -> stringResource(R.string.setup_status_granted)
+                    status.shizukuGranted -> stringResource(R.string.setup_status_not_needed)
                     else -> stringResource(R.string.setup_status_not_granted)
                 },
                 granted = status.rootGranted,

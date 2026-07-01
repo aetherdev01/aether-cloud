@@ -15,6 +15,8 @@
     <string name="setup_status_not_granted">Belum Aktif</string>
     <string name="setup_status_checking">Memeriksa…</string>
     <string name="setup_status_not_installed">Belum Terpasang</string>
+    <string name="setup_status_not_needed">Tidak perlu — Shizuku sudah aktif</string>
+    <string name="setup_or_divider">— ATAU —</string>
     <string name="setup_action_request">Minta Izin</string>
     <string name="setup_action_open_shizuku">Buka Shizuku</string>
     <string name="setup_action_install_shizuku">Pasang Shizuku</string>
@@ -50,9 +52,10 @@
     <string name="tweak_touch_boost_desc">Eksperimental — dampaknya tergantung perangkat.</string>
     <string name="tweak_section_display">Resolusi &amp; DPI</string>
     <string name="tweak_dpi">Screen DPI</string>
-    <string name="tweak_dpi_desc">DPI lebih rendah = sentuhan terasa lebih presisi dan ringan.</string>
-    <string name="tweak_width">Lebar Resolusi</string>
-    <string name="tweak_width_desc">Menurunkan resolusi bisa mengurangi beban render saat bermain.</string>
+    <string name="tweak_dpi_desc">DPI lebih tinggi = tampilan lebih rapat dan licin (elemen UI mengecil). DPI lebih rendah = tampilan lebih lebar dan renggang.</string>
+    <string name="tweak_dpi_manual_label">Atur manual (dpi)</string>
+    <string name="tweak_width_projected">≈ %1$d dp lebar layar</string>
+    <string name="tweak_dpi_hint">Resolusi fisik layar tidak diubah — hanya densitas (DPI) yang diterapkan, sama seperti perintah wm density di ADB.</string>
     <string name="tweak_section_refresh">Refresh Rate</string>
     <string name="tweak_force_refresh">Paksa Refresh Rate Maksimal</string>
     <string name="tweak_force_refresh_desc">Mengunci layar pada refresh rate tertinggi yang didukung.</string>
