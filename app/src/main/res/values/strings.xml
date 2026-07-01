@@ -11,7 +11,7 @@
 
     <!-- Onboarding — Setup Permission (dipakai ulang sebagai "Kelola Akses" di halaman utama) -->
     <string name="setup_title">Kelola Akses</string>
-    <string name="setup_subtitle">AetherX butuh salah satu akses berikut untuk bisa mengatur sensitivitas sentuh, DPI, dan refresh rate perangkatmu. Semua izin ini otomatis diminta saat aplikasi dibuka — halaman ini untuk memeriksa ulang atau memberi izin yang sempat terlewat/ditolak.</string>
+    <string name="setup_subtitle">AetherX butuh salah satu akses berikut untuk bisa mengatur parameter sistem, DPI, dan refresh rate perangkatmu. Semua izin ini otomatis diminta saat aplikasi dibuka — halaman ini untuk memeriksa ulang atau memberi izin yang sempat terlewat/ditolak.</string>
     <string name="setup_required_banner">Wajib diaktifkan salah satu sebelum bisa melanjutkan</string>
     <string name="setup_method_shizuku">Shizuku (Tanpa Root)</string>
     <string name="setup_method_shizuku_desc">Cocok untuk HP yang tidak di-root. Perlu aplikasi Shizuku aktif lewat Wireless Debugging.</string>
@@ -60,27 +60,27 @@
 
     <!-- Tweak screen -->
     <string name="tweak_user_id_format">ID-%1$d</string>
-    <string name="tweak_subtitle">Sesuaikan sensitivitas sentuh dan refresh rate perangkatmu. Perubahan langsung aktif.</string>
-    <string name="tweak_section_touch">Sensitivitas Sentuh</string>
-    <string name="tweak_pointer_speed">Kecepatan Pointer</string>
-    <string name="tweak_pointer_speed_desc">Mengatur respons gerak sentuh sistem (-7 lambat, 7 cepat).</string>
-    <string name="tweak_touch_boost">Touch Sensitivity Boost</string>
-    <string name="tweak_touch_boost_desc">Eksperimental — dampaknya tergantung perangkat.</string>
-    <string name="tweak_section_refresh">Refresh Rate</string>
+    <string name="tweak_subtitle">Kontrol parameter sistem &amp; kernel perangkatmu secara langsung. Perubahan aktif seketika.</string>
+    <string name="tweak_section_touch">Input Driver</string>
+    <string name="tweak_pointer_speed">Pointer Speed</string>
+    <string name="tweak_pointer_speed_desc">Nilai driver input sistem yang menentukan kecepatan respons kursor/sentuh (-7 lambat, 7 cepat).</string>
+    <string name="tweak_touch_boost">Touch Response Override</string>
+    <string name="tweak_touch_boost_desc">Eksperimental — menimpa parameter respons sentuh bawaan sistem. Dampak tergantung driver perangkat.</string>
+    <string name="tweak_section_refresh">Display Refresh Rate</string>
     <string name="tweak_force_refresh">Paksa Refresh Rate Maksimal</string>
-    <string name="tweak_force_refresh_desc">Mengunci layar pada refresh rate tertinggi yang didukung.</string>
+    <string name="tweak_force_refresh_desc">Mengunci parameter refresh rate layar pada nilai tertinggi yang didukung hardware.</string>
     <string name="tweak_section_game_mode">Mode Game</string>
     <string name="tweak_game_mode">Aktifkan Mode Game</string>
     <string name="tweak_game_mode_desc">Nyalakan Jangan Ganggu (DND) otomatis supaya notifikasi tidak muncul saat main.</string>
 
     <!-- Tweak khusus root -->
-    <string name="tweak_section_root">Khusus Root</string>
-    <string name="tweak_cpu_performance">Mode Performa CPU</string>
+    <string name="tweak_section_root">Kernel Tuning (Root)</string>
+    <string name="tweak_cpu_performance">CPU Governor: Performance</string>
     <string name="tweak_cpu_performance_desc">Kunci semua core CPU ke clock speed maksimum (governor performance) selama bermain, mengurangi micro-stutter akibat naik-turun frekuensi. Butuh akses root.</string>
-    <string name="tweak_ram_priority">Prioritas RAM</string>
-    <string name="tweak_ram_priority_desc">Turunkan swappiness kernel supaya sistem lebih jarang menukar data game ke swap/zram, menjaga game tetap di RAM. Butuh akses root.</string>
+    <string name="tweak_ram_priority">Swappiness Override</string>
+    <string name="tweak_ram_priority_desc">Turunkan nilai swappiness kernel supaya sistem lebih jarang menukar data game ke swap/zram, menjaga game tetap di RAM. Butuh akses root.</string>
     <string name="tweak_reset">Reset ke Default Pabrik</string>
-    <string name="tweak_reset_toast">Pengaturan dikembalikan ke default</string>
+    <string name="tweak_reset_toast">Parameter kernel &amp; sistem dikembalikan ke default</string>
     <string name="tweak_no_access_toast">Aktifkan Shizuku atau Root dulu di menu Pengaturan</string>
 
     <!-- Tweak screen — game launcher (floating button) -->

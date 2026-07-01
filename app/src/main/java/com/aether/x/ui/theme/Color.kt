@@ -20,10 +20,6 @@ val AccentBlueSoft = Color(0xFFAFC6FF)    // biru lebih muda untuk subtitle/link
 val AccentBlueDim = Color(0xFF3D4A6B)     // biru redup untuk track OFF berwarna
 val OnAccentBlue = Color(0xFF0A0F1F)
 
-// Aksen kuning/emas (locked / premium)
-val AccentGold = Color(0xFFE8B84B)
-val AccentGoldDim = Color(0xFF6B5A2E)
-
 // Aksen merah (disconnected/error)
 val AccentRed = Color(0xFFFF6B5E)
 
