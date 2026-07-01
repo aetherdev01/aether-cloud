@@ -3,7 +3,8 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- Hitam pekat, senada dengan BgVoid tema aplikasi (bukan lagi biru ungu). -->
     <path
-        android:fillColor="#5B5FEF"
+        android:fillColor="#000000"
         android:pathData="M0,0 H108 V108 H0 Z" />
 </vector>

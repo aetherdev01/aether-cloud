@@ -3,8 +3,12 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Bolt-X mark: a lightning bolt fused with an X silhouette, representing
-         touch responsiveness ("pelicin layar") and the AetherX brand. -->
+    <!-- Bolt-X mark: dipakai sebagai status bar / notification icon (Android
+         cuma membaca alpha channel-nya, warna diabaikan sistem) dan splash
+         screen icon — makanya tetap SOLID (bukan outline tipis) supaya
+         detailnya tidak hilang di ukuran kecil (~24dp di status bar).
+         Untuk app icon di homescreen, lihat ic_launcher_foreground.xml yang
+         memakai gaya outline tebal. -->
     <path
         android:fillColor="#FFFFFF"
         android:pathData="M40,24 L62,24 L50,48 L66,48 L42,84 L48,58 L34,58 Z" />
