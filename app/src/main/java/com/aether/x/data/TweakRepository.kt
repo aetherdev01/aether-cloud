@@ -80,6 +80,46 @@ class TweakRepository {
         return executor.exec("echo $value > /proc/sys/vm/swappiness")
     }
 
+    /**
+     * Khusus root: menaikkan batas suhu shutdown/throttle di zona termal
+     * kernel supaya sistem tidak buru-buru menurunkan clock CPU/GPU saat
+     * perangkat mulai panas bermain lama. Nilai ditulis dalam milidegree
+     * Celsius (mis. 90000 = 90°C) ke setiap `trip_point_0_temp` yang ada.
+     * Tidak ada nilai "default pabrik" yang seragam antar chipset, jadi saat
+     * dimatikan kita tidak menulis ulang apa pun — cukup andalkan reboot
+     * atau reset manual perangkat untuk kembali ke batas asli vendor.
+     * Butuh akses tulis ke /sys/class/thermal, hanya bisa lewat root.
+     */
+    suspend fun applyThermalThrottleOverride(executor: ShellExecutor, enabled: Boolean): ShellResult {
+        return if (enabled) {
+            executor.exec(
+                "for z in /sys/class/thermal/thermal_zone*/trip_point_0_temp; do " +
+                    "echo 90000 > \$z; done",
+            )
+        } else {
+            executor.exec("echo 'thermal override dimatikan, restart perangkat untuk memulihkan batas asli vendor'")
+        }
+    }
+
+    /**
+     * Khusus root: kunci frekuensi GPU ke nilai maksimum yang didukung
+     * (governor "performance"), mirip cara kerja Mode Performa CPU. Path
+     * governor GPU tidak seragam antar chipset (Adreno/Mali/dsb), jadi
+     * perintah ini mencoba beberapa lokasi umum sekaligus — yang tidak ada
+     * di perangkat akan otomatis diabaikan shell tanpa membuat proses gagal.
+     * Dikembalikan ke "simple_ondemand"/"default" saat dimatikan.
+     * Butuh akses tulis ke /sys/class/kgsl atau /sys/devices/*/kgsl-3d0,
+     * yang biasanya hanya bisa lewat root.
+     */
+    suspend fun applyGpuPerformanceMode(executor: ShellExecutor, enabled: Boolean): ShellResult {
+        val governor = if (enabled) "performance" else "simple_ondemand"
+        return executor.exec(
+            "for g in /sys/class/kgsl/kgsl-3d0/devfreq/governor " +
+                "/sys/devices/platform/*/kgsl-3d0/devfreq/governor; do " +
+                "[ -f \$g ] && echo $governor > \$g; done",
+        )
+    }
+
     suspend fun resetAll(executor: ShellExecutor): List<ShellResult> = listOf(
         resetDensity(executor),
         resetSize(executor),
@@ -89,5 +129,7 @@ class TweakRepository {
         applyGameMode(executor, enabled = false),
         applyCpuPerformanceMode(executor, enabled = false),
         applyRamPriority(executor, enabled = false),
+        applyThermalThrottleOverride(executor, enabled = false),
+        applyGpuPerformanceMode(executor, enabled = false),
     )
 }

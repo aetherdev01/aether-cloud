@@ -35,6 +35,8 @@ data class AppPreferences(
     val gameModeEnabled: Boolean = false,
     val cpuPerformanceMode: Boolean = false,
     val ramPriorityMode: Boolean = false,
+    val thermalThrottleOverride: Boolean = false,
+    val gpuPerformanceMode: Boolean = false,
     val crosshairEnabled: Boolean = false,
     val crosshairStyle: CrosshairStyle = CrosshairStyle.CROSS,
     val crosshairColor: Long = 0xFF00FF66,
@@ -70,6 +72,9 @@ class AetherXPreferences(private val context: Context) {
         // Khusus root: mode performa CPU (governor) & prioritas RAM (swappiness).
         val CPU_PERFORMANCE_MODE = booleanPreferencesKey("cpu_performance_mode")
         val RAM_PRIORITY_MODE = booleanPreferencesKey("ram_priority_mode")
+        // Khusus root: override batas thermal throttling & governor performa GPU.
+        val THERMAL_THROTTLE_OVERRIDE = booleanPreferencesKey("thermal_throttle_override")
+        val GPU_PERFORMANCE_MODE = booleanPreferencesKey("gpu_performance_mode")
         // Disimpan agar bisa dipulihkan walau aplikasi sempat ditutup,
         // meski nilainya berupa Float (refresh rate target dalam Hz).
         val REFRESH_TARGET = floatPreferencesKey("refresh_target_hz")
@@ -115,6 +120,8 @@ class AetherXPreferences(private val context: Context) {
             gameModeEnabled = prefs[Keys.GAME_MODE] ?: false,
             cpuPerformanceMode = prefs[Keys.CPU_PERFORMANCE_MODE] ?: false,
             ramPriorityMode = prefs[Keys.RAM_PRIORITY_MODE] ?: false,
+            thermalThrottleOverride = prefs[Keys.THERMAL_THROTTLE_OVERRIDE] ?: false,
+            gpuPerformanceMode = prefs[Keys.GPU_PERFORMANCE_MODE] ?: false,
             crosshairEnabled = prefs[Keys.CROSSHAIR_ENABLED] ?: false,
             crosshairStyle = prefs[Keys.CROSSHAIR_STYLE]
                 ?.let { runCatching { CrosshairStyle.valueOf(it) }.getOrNull() }
@@ -153,6 +160,8 @@ class AetherXPreferences(private val context: Context) {
         gameModeEnabled: Boolean,
         cpuPerformanceMode: Boolean = false,
         ramPriorityMode: Boolean = false,
+        thermalThrottleOverride: Boolean = false,
+        gpuPerformanceMode: Boolean = false,
     ) {
         context.dataStore.edit { prefs ->
             prefs[Keys.POINTER_SPEED] = pointerSpeed
@@ -161,6 +170,8 @@ class AetherXPreferences(private val context: Context) {
             prefs[Keys.GAME_MODE] = gameModeEnabled
             prefs[Keys.CPU_PERFORMANCE_MODE] = cpuPerformanceMode
             prefs[Keys.RAM_PRIORITY_MODE] = ramPriorityMode
+            prefs[Keys.THERMAL_THROTTLE_OVERRIDE] = thermalThrottleOverride
+            prefs[Keys.GPU_PERFORMANCE_MODE] = gpuPerformanceMode
         }
     }
 
@@ -174,6 +185,8 @@ class AetherXPreferences(private val context: Context) {
             prefs[Keys.GAME_MODE] = false
             prefs[Keys.CPU_PERFORMANCE_MODE] = false
             prefs[Keys.RAM_PRIORITY_MODE] = false
+            prefs[Keys.THERMAL_THROTTLE_OVERRIDE] = false
+            prefs[Keys.GPU_PERFORMANCE_MODE] = false
         }
     }
 

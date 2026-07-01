@@ -28,6 +28,8 @@ data class TweakUiState(
     val gameModeEnabled: Boolean = false,
     val cpuPerformanceMode: Boolean = false,
     val ramPriorityMode: Boolean = false,
+    val thermalThrottleOverride: Boolean = false,
+    val gpuPerformanceMode: Boolean = false,
     val message: String? = null,
     val detectedGames: List<DetectedGame> = emptyList(),
     val userId: Int? = null,
@@ -67,6 +69,8 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
                     gameModeEnabled = saved.gameModeEnabled,
                     cpuPerformanceMode = saved.cpuPerformanceMode,
                     ramPriorityMode = saved.ramPriorityMode,
+                    thermalThrottleOverride = saved.thermalThrottleOverride,
+                    gpuPerformanceMode = saved.gpuPerformanceMode,
                 )
             }
         }
@@ -136,6 +140,18 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
         applyAndPersist { executor -> repository.applyRamPriority(executor, checked) }
     }
 
+    /** Khusus root: naikkan batas suhu throttle supaya CPU/GPU tidak buru-buru diturunkan clock-nya. */
+    fun onThermalThrottleOverrideChange(checked: Boolean) {
+        _state.update { it.copy(thermalThrottleOverride = checked) }
+        applyAndPersist { executor -> repository.applyThermalThrottleOverride(executor, checked) }
+    }
+
+    /** Khusus root: kunci frekuensi GPU ke governor performance selama bermain. */
+    fun onGpuPerformanceModeChange(checked: Boolean) {
+        _state.update { it.copy(gpuPerformanceMode = checked) }
+        applyAndPersist { executor -> repository.applyGpuPerformanceMode(executor, checked) }
+    }
+
     fun consumeMessage() {
         _state.update { it.copy(message = null) }
     }
@@ -150,6 +166,8 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
                 repository.applyGameMode(executor, false)
                 repository.applyCpuPerformanceMode(executor, false)
                 repository.applyRamPriority(executor, false)
+                repository.applyThermalThrottleOverride(executor, false)
+                repository.applyGpuPerformanceMode(executor, false)
             }
             preferences.clearTweakState()
             _state.update {
@@ -160,6 +178,8 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
                     gameModeEnabled = false,
                     cpuPerformanceMode = false,
                     ramPriorityMode = false,
+                    thermalThrottleOverride = false,
+                    gpuPerformanceMode = false,
                     message = appString(R.string.tweak_reset_toast),
                 )
             }
@@ -185,6 +205,8 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
                 gameModeEnabled = s.gameModeEnabled,
                 cpuPerformanceMode = s.cpuPerformanceMode,
                 ramPriorityMode = s.ramPriorityMode,
+                thermalThrottleOverride = s.thermalThrottleOverride,
+                gpuPerformanceMode = s.gpuPerformanceMode,
             )
         }
     }

@@ -12,8 +12,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Bolt
+import androidx.compose.material.icons.outlined.DeveloperBoard
 import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material.icons.outlined.Speed
+import androidx.compose.material.icons.outlined.Thermostat
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -142,6 +144,20 @@ fun TweakScreen(
                         checked = state.ramPriorityMode,
                         onCheckedChange = viewModel::onRamPriorityModeChange,
                         icon = Icons.Outlined.Memory,
+                    )
+                    TweakSwitch(
+                        label = stringResource(R.string.tweak_gpu_performance),
+                        description = stringResource(R.string.tweak_gpu_performance_desc),
+                        checked = state.gpuPerformanceMode,
+                        onCheckedChange = viewModel::onGpuPerformanceModeChange,
+                        icon = Icons.Outlined.DeveloperBoard,
+                    )
+                    TweakSwitch(
+                        label = stringResource(R.string.tweak_thermal_throttle),
+                        description = stringResource(R.string.tweak_thermal_throttle_desc),
+                        checked = state.thermalThrottleOverride,
+                        onCheckedChange = viewModel::onThermalThrottleOverrideChange,
+                        icon = Icons.Outlined.Thermostat,
                     )
                 }
             }
