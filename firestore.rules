@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /meta/user_counter {
+      // Siapa saja boleh baca nilai counter saat ini (opsional, bisa dihapus
+      // kalau tidak mau nilai count terbaca publik).
+      allow get: if true;
+
+      // Dokumen baru hanya boleh dibuat dengan count = 1 (alokasi user pertama).
+      allow create: if request.resource.data.count == 1;
+
+      // Update hanya diterima kalau count naik PERSIS 1 dari nilai sebelumnya
+      // (mencegah orang menulis angka sembarangan / lompat jauh).
+      allow update: if request.resource.data.count == resource.data.count + 1;
+
+      allow delete: if false;
+    }
+
+    match /devices/{deviceId} {
+      // Tidak ada alasan client perlu baca data device orang lain.
+      allow get: if false;
+
+      // Dokumen baru: field wajib ada, deviceId di data harus cocok dengan
+      // document ID (mencegah orang menulis ke devices/A tapi isi field
+      // deviceId-nya "B"), dan firstLoginAt/lastLoginAt harus benar-benar
+      // timestamp server saat request diterima (bukan tanggal sembarangan
+      // yang dikirim manual dari client).
+      allow create: if request.resource.data.deviceId == deviceId
+        && request.resource.data.firstLoginAt == request.time
+        && request.resource.data.lastLoginAt == request.time
+        && request.resource.data.userId is int;
+
+      // Update: deviceId dan firstLoginAt tidak boleh berubah sama sekali
+      // (mencegah orang menimpa ulang catatan "login pertama"-nya sendiri).
+      // Hanya lastLoginAt (harus == request.time) dan userId yang boleh berubah.
+      allow update: if request.resource.data.deviceId == resource.data.deviceId
+        && request.resource.data.firstLoginAt == resource.data.firstLoginAt
+        && request.resource.data.lastLoginAt == request.time;
+
+      allow delete: if false;
+    }
+  }
+}

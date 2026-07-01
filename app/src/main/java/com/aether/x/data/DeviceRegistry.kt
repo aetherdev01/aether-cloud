@@ -51,21 +51,39 @@ class DeviceRegistry(private val context: Context) {
      * Gagal secara diam-diam (dicatat ke Logcat) supaya tidak pernah memblokir
      * alur utama aplikasi — pendataan ini bersifat best-effort.
      *
-     * @param userId ID pengguna numerik lokal/tersinkron (lihat [UserIdRepository]).
+     * Bentuk data sengaja dipisah antara dokumen BARU vs yang SUDAH ADA supaya
+     * cocok dengan Firestore Security Rules (lihat firestore.rules):
+     * - create: `deviceId`, `firstLoginAt`, `lastLoginAt`, DAN `userId` wajib
+     *   dikirim sekaligus (`userId` harus berupa Int — rules menolak kalau
+     *   tidak ada), timestamp keduanya berupa `FieldValue.serverTimestamp()`.
+     * - update: `deviceId` dan `firstLoginAt` TIDAK dikirim ulang (rules
+     *   menolak kalau nilainya berubah), hanya `lastLoginAt` dan `userId`.
+     *
+     * @param userId ID pengguna numerik yang SUDAH teresolusi (lihat
+     *   [UserIdRepository.resolveUserId]) — wajib non-null karena rules
+     *   `create` mensyaratkan field ini ada. Panggil fungsi ini setelah
+     *   `resolveUserId()` selesai, bukan sebelumnya.
      */
-    suspend fun recordDeviceLogin(userId: Int?) {
+    suspend fun recordDeviceLogin(userId: Int) {
         runCatching {
             val docRef = firestore.collection(COLLECTION).document(deviceId)
             val isFirstLogin = !documentExists(docRef)
 
-            val data = buildMap<String, Any> {
-                put("deviceId", deviceId)
-                put("lastLoginAt", FieldValue.serverTimestamp())
-                if (userId != null) put("userId", userId)
-                if (isFirstLogin) put("firstLoginAt", FieldValue.serverTimestamp())
+            if (isFirstLogin) {
+                val data = mapOf(
+                    "deviceId" to deviceId,
+                    "firstLoginAt" to FieldValue.serverTimestamp(),
+                    "lastLoginAt" to FieldValue.serverTimestamp(),
+                    "userId" to userId,
+                )
+                setDocument(docRef, data, merge = false)
+            } else {
+                val data = mapOf(
+                    "lastLoginAt" to FieldValue.serverTimestamp(),
+                    "userId" to userId,
+                )
+                setDocument(docRef, data, merge = true)
             }
-
-            setDocument(docRef, data)
         }.onFailure { e ->
             Log.w(TAG, "Gagal mendata perangkat ke Firestore", e)
         }
@@ -82,8 +100,10 @@ class DeviceRegistry(private val context: Context) {
     private suspend fun setDocument(
         docRef: com.google.firebase.firestore.DocumentReference,
         data: Map<String, Any>,
+        merge: Boolean,
     ): Unit = suspendCancellableCoroutine { cont ->
-        docRef.set(data, SetOptions.merge())
+        val task = if (merge) docRef.set(data, SetOptions.merge()) else docRef.set(data)
+        task
             .addOnSuccessListener { if (cont.isActive) cont.resume(Unit) }
             .addOnFailureListener { if (cont.isActive) cont.resume(Unit) }
     }
