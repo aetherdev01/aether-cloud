@@ -1,34 +1,56 @@
 package com.aether.x.ui.onboarding
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.aether.x.R
+import com.aether.x.ui.theme.AccentBlue
+import com.aether.x.ui.theme.BgVoid
+import com.aether.x.ui.theme.StrokeSubtle
+import com.aether.x.ui.theme.TextMuted
+import com.aether.x.ui.theme.TextPrimary
+import com.aether.x.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
 
 private data class GuidePage(val title: Int, val body: Int)
@@ -40,27 +62,88 @@ private val guidePages = listOf(
     GuidePage(R.string.guide_title_4, R.string.guide_body_4),
 )
 
+/**
+ * Halaman panduan/selamat datang — hasil rework total.
+ *
+ * Beda dari versi lama: ilustrasi kini jadi hero penuh di bagian atas layar
+ * (bukan kartu kecil di tengah), teks disusun dengan hierarki yang lebih
+ * jelas, dan transisi antar halaman memakai efek parallax (ilustrasi
+ * bergerak/scale lebih lambat dari swipe) supaya terasa lebih hidup saat
+ * digeser. Progress ditampilkan sebagai step label + bar tipis di atas,
+ * dilengkapi tombol kembali begitu pengguna sudah melewati halaman pertama.
+ */
 @Composable
 fun GuideScreen(
     onFinish: () -> Unit,
 ) {
     val pagerState = rememberPagerState(pageCount = { guidePages.size })
     val scope = rememberCoroutineScope()
+    val isLastPage = pagerState.currentPage == guidePages.lastIndex
+    val isFirstPage = pagerState.currentPage == 0
 
-    Scaffold { padding ->
+    Scaffold(containerColor = BgVoid) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .padding(padding)
-                .padding(horizontal = 24.dp, vertical = 16.dp),
+                .padding(padding),
         ) {
+            // --- Header: back button, step label, skip ---
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
+                Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+                    AnimatedVisibility(visible = !isFirstPage) {
+                        IconButton(onClick = {
+                            scope.launch {
+                                pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                                contentDescription = stringResource(R.string.guide_back),
+                                tint = TextSecondary,
+                            )
+                        }
+                    }
+                }
+
+                Text(
+                    text = stringResource(
+                        R.string.guide_step_label,
+                        pagerState.currentPage + 1,
+                        guidePages.size,
+                    ),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = TextMuted,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center,
+                )
+
                 TextButton(onClick = onFinish) {
-                    Text(stringResource(R.string.guide_skip))
+                    Text(stringResource(R.string.guide_skip), color = TextMuted)
+                }
+            }
+
+            // --- Progress bar: satu batang tipis per halaman ---
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                guidePages.indices.forEach { index ->
+                    val filled = index <= pagerState.currentPage
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(4.dp)
+                            .clip(RoundedCornerShape(50))
+                            .background(if (filled) AccentBlue else StrokeSubtle),
+                    )
                 }
             }
 
@@ -68,26 +151,27 @@ fun GuideScreen(
                 state = pagerState,
                 modifier = Modifier.weight(1f),
             ) { page ->
-                val item = guidePages[page]
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    val pageOffset = (
-                        (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
-                        ).let { kotlin.math.abs(it) }.coerceIn(0f, 1f)
+                val pageOffset = (
+                    (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+                    ).let { kotlin.math.abs(it) }.coerceIn(0f, 1f)
 
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // --- Hero: ilustrasi mengisi porsi besar layar dengan parallax ---
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .aspectRatio(1.4f)
+                            .weight(1f)
+                            .padding(horizontal = 20.dp, vertical = 8.dp)
                             .graphicsLayer {
-                                val scale = lerp(0.9f, 1f, 1f - pageOffset)
+                                // Parallax: ilustrasi bergerak & mengecil lebih lambat dari swipe,
+                                // beda dari versi lama yang cuma scale+fade simetris.
+                                translationX = pageOffset * size.width * 0.18f
+                                val scale = lerp(0.86f, 1f, 1f - pageOffset)
                                 scaleX = scale
                                 scaleY = scale
-                                alpha = lerp(0.4f, 1f, 1f - pageOffset)
+                                alpha = lerp(0.35f, 1f, 1f - pageOffset)
                             }
-                            .clip(RoundedCornerShape(28.dp))
+                            .clip(RoundedCornerShape(32.dp))
                             .background(
                                 Brush.linearGradient(
                                     colors = listOf(
@@ -99,64 +183,69 @@ fun GuideScreen(
                     ) {
                         GuideIllustration(page = page, modifier = Modifier.fillMaxSize())
                     }
-                    Text(
-                        text = stringResource(item.title),
-                        style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.padding(top = 28.dp),
-                    )
-                    Text(
-                        text = stringResource(item.body),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 12.dp),
-                    )
+
+                    // --- Teks: judul besar + body, rata kiri untuk hierarki lebih jelas ---
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 28.dp, vertical = 20.dp),
+                    ) {
+                        Text(
+                            text = stringResource(guidePages[page].title),
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary,
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = stringResource(guidePages[page].body),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = TextSecondary,
+                        )
+                    }
                 }
             }
 
-            Row(
+            // --- CTA ---
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                horizontalArrangement = Arrangement.Center,
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 24.dp, top = 4.dp),
             ) {
-                repeat(guidePages.size) { index ->
-                    val selected = pagerState.currentPage == index
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 4.dp)
-                            .size(if (selected) 22.dp else 8.dp, 8.dp)
-                            .clip(RoundedCornerShape(50))
-                            .background(
-                                if (selected) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceVariant
-                                },
-                            ),
-                    )
-                }
-            }
-
-            val isLastPage = pagerState.currentPage == guidePages.lastIndex
-            Button(
-                onClick = {
-                    if (isLastPage) {
-                        onFinish()
-                    } else {
-                        scope.launch {
-                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                Button(
+                    onClick = {
+                        if (isLastPage) {
+                            onFinish()
+                        } else {
+                            scope.launch {
+                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                            }
                         }
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    if (isLastPage) {
-                        stringResource(R.string.guide_finish)
-                    } else {
-                        stringResource(R.string.guide_next)
                     },
-                )
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = AccentBlue),
+                ) {
+                    AnimatedContent(
+                        targetState = isLastPage,
+                        transitionSpec = {
+                            (fadeIn(tween(150)) togetherWith fadeOut(tween(150)))
+                        },
+                        label = "cta-label",
+                    ) { last ->
+                        Text(
+                            text = if (last) {
+                                stringResource(R.string.guide_finish)
+                            } else {
+                                stringResource(R.string.guide_next)
+                            },
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                }
             }
         }
     }

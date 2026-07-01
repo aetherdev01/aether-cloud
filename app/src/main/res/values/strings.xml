@@ -43,15 +43,17 @@
     <!-- Onboarding — Guide -->
     <string name="guide_skip">Lewati</string>
     <string name="guide_next">Lanjut</string>
-    <string name="guide_finish">Mulai Pakai</string>
-    <string name="guide_title_1">Selamat Datang di AetherX</string>
-    <string name="guide_body_1">Optimalkan respons sentuhan layar HP kamu sebelum mabar Free Fire. Atur DPI, resolusi, kecepatan pointer, dan refresh rate dalam satu tempat.</string>
-    <string name="guide_title_2">Kenapa Layar Terasa \'Licin\'?</string>
-    <string name="guide_body_2">Menurunkan DPI dan resolusi membuat pemetaan sentuhan ke piksel jadi lebih presisi, sementara refresh rate tinggi membuat gerakan terasa lebih halus dan responsif.</string>
-    <string name="guide_title_3">Aman &amp; Bisa Dikembalikan</string>
-    <string name="guide_body_3">Semua perubahan memakai perintah sistem Android resmi (wm, settings) dan bisa dikembalikan ke pengaturan pabrik kapan saja lewat tombol Reset.</string>
-    <string name="guide_title_4">Siap Tweak</string>
-    <string name="guide_body_4">Buka tab Tweak, lalu geser slider atau nyalakan saklar sesuai selera. Perubahan langsung aktif di sistem tanpa perlu menekan tombol apapun, termasuk saat main Free Fire.</string>
+    <string name="guide_back">Kembali</string>
+    <string name="guide_finish">Ayo Mulai</string>
+    <string name="guide_step_label">Langkah %1$d dari %2$d</string>
+    <string name="guide_title_1">Halo, ini AetherX</string>
+    <string name="guide_body_1">Selama ini kalau mau ubah DPI, governor CPU, atau swappiness, kamu ketik manual satu-satu lewat adb shell atau terminal root. AetherX kami buat supaya semua itu tinggal ketuk — tanpa kehilangan kendali atas apa yang sebenarnya dijalankan.</string>
+    <string name="guide_title_2">Kamu tetap yang pegang kendali</string>
+    <string name="guide_body_2">Tiap kali kamu geser slider atau nyalakan saklar, yang terjadi di baliknya cuma satu baris perintah shell biasa — sama seperti yang kamu ketik sendiri. Tidak ada proses tersembunyi, tidak ada modifikasi kernel image.</string>
+    <string name="guide_title_3">Root buka kunci yang lebih dalam</string>
+    <string name="guide_body_3">Dengan Shizuku kamu sudah bisa main-main dengan DPI, refresh rate, dan pointer speed. Tapi kalau perangkatmu root, kamu dapat akses ke governor CPU/GPU, swappiness, sampai trip point termal — bagian kernel yang biasanya cuma bisa disentuh dari terminal.</string>
+    <string name="guide_title_4">Coba, dan jangan takut salah</string>
+    <string name="guide_body_4">Utak-atik parameter di tab Tweak sesuka hati. Kalau ada yang terasa aneh, satu ketukan tombol Reset di pojok layar mengembalikan semuanya persis seperti semula. Selamat eksplorasi.</string>
 
 
     <!-- Bottom navigation -->

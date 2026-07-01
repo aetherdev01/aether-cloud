@@ -27,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
@@ -44,6 +45,11 @@ import kotlin.math.sin
  * "1, 2, 3, 4". Dibuat murni pakai Compose animation + Canvas (tanpa aset
  * Lottie eksternal) supaya tetap ringan, tidak butuh file tambahan, dan
  * langsung jalan di semua device tanpa dependensi baru.
+ *
+ * Sejak rework halaman panduan, ilustrasi ini dipakai sebagai hero penuh
+ * (bukan lagi kartu kecil di tengah layar) sehingga area gambarnya jauh
+ * lebih luas — beberapa efek (glow, radius ring, jarak orbit) disesuaikan
+ * agar tetap proporsional di kanvas yang lebih besar.
  */
 @Composable
 fun GuideIllustration(page: Int, modifier: Modifier = Modifier) {
@@ -86,6 +92,17 @@ private fun WelcomeIllustration(modifier: Modifier = Modifier) {
             val center = Offset(size.width / 2f, size.height / 2f)
             val baseRadius = size.minDimension * 0.22f
 
+            // Glow lembut di belakang logo — makin terasa di kanvas hero yang lebih besar.
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(Color.White.copy(alpha = 0.16f), Color.Transparent),
+                    center = center,
+                    radius = size.minDimension * 0.48f,
+                ),
+                radius = size.minDimension * 0.48f,
+                center = center,
+            )
+
             listOf(0f, 0.5f).forEach { phase ->
                 val p = (ringProgress + phase) % 1f
                 drawCircle(
@@ -110,7 +127,7 @@ private fun WelcomeIllustration(modifier: Modifier = Modifier) {
             painter = painterResource(R.drawable.ic_aetherx_mark),
             contentDescription = null,
             modifier = Modifier
-                .size(64.dp)
+                .size(76.dp)
                 .graphicsLayer { scaleX = pulse; scaleY = pulse },
         )
     }
@@ -165,7 +182,7 @@ private fun TouchPrecisionIllustration(modifier: Modifier = Modifier) {
             contentDescription = null,
             tint = Color.White,
             modifier = Modifier
-                .size(56.dp)
+                .size(64.dp)
                 .graphicsLayer { scaleX = tapScale; scaleY = tapScale },
         )
     }
@@ -229,7 +246,7 @@ private fun SafeReversibleIllustration(modifier: Modifier = Modifier) {
             contentDescription = null,
             tint = Color.White,
             modifier = Modifier
-                .size(52.dp)
+                .size(60.dp)
                 .graphicsLayer { scaleX = checkPulse; scaleY = checkPulse },
         )
     }
@@ -265,7 +282,7 @@ private fun ReadyToTweakIllustration(modifier: Modifier = Modifier) {
                 contentDescription = null,
                 tint = Color.White,
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(52.dp)
                     .offset(y = boltOffset.dp)
                     .padding(bottom = 18.dp),
             )

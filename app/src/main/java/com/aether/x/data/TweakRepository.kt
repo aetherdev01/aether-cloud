@@ -108,7 +108,7 @@ class TweakRepository {
      * perintah ini mencoba beberapa lokasi umum sekaligus — yang tidak ada
      * di perangkat akan otomatis diabaikan shell tanpa membuat proses gagal.
      * Dikembalikan ke "simple_ondemand"/"default" saat dimatikan.
-     * Butuh akses tulis ke /sys/class/kgsl atau /sys/devices/*/kgsl-3d0,
+     * Butuh akses tulis ke /sys/class/kgsl atau /sys/devices/[chip]/kgsl-3d0,
      * yang biasanya hanya bisa lewat root.
      */
     suspend fun applyGpuPerformanceMode(executor: ShellExecutor, enabled: Boolean): ShellResult {
