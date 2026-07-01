@@ -22,6 +22,7 @@ import com.aether.x.ui.main.MainScreen
 import com.aether.x.ui.navigation.AetherXRoutes
 import com.aether.x.ui.onboarding.GuideScreen
 import com.aether.x.ui.onboarding.PermissionSetupScreen
+import com.aether.x.ui.onboarding.SplashScreen
 import com.aether.x.ui.theme.AetherXTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -78,8 +79,8 @@ private fun AetherXRoot(
 
     NavHost(navController = navController, startDestination = startDestination) {
         composable(AetherXRoutes.SETUP_ONBOARDING) {
-            PermissionSetupScreen(
-                onContinue = { navController.navigate(AetherXRoutes.GUIDE_ONBOARDING) },
+            SplashScreen(
+                onDone = { navController.navigate(AetherXRoutes.GUIDE_ONBOARDING) },
             )
         }
         composable(AetherXRoutes.GUIDE_ONBOARDING) {

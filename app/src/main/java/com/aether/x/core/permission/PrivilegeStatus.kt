@@ -16,6 +16,9 @@ data class PrivilegeStatus(
     val rootAvailable: Boolean? = null,
     val rootGranted: Boolean = false,
     val checkingRoot: Boolean = false,
+    val writeSettingsGranted: Boolean = false,
+    val overlayGranted: Boolean = false,
+    val notificationsGranted: Boolean = false,
 ) {
     val activeBackend: PrivilegeBackend
         get() = when {
@@ -25,4 +28,8 @@ data class PrivilegeStatus(
         }
 
     val hasAccess: Boolean get() = activeBackend != PrivilegeBackend.NONE
+
+    /** Semua izin pendukung (di luar Shizuku/root) sudah aktif. */
+    val hasAllSupportingPermissions: Boolean
+        get() = writeSettingsGranted && overlayGranted && notificationsGranted
 }

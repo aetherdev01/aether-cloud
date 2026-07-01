@@ -1,6 +1,11 @@
 package com.aether.x.core.permission
 
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import com.aether.x.core.shell.RootShellExecutor
 import com.aether.x.core.shell.ShellExecutor
 import com.aether.x.core.shell.ShizukuShellExecutor
@@ -48,6 +53,36 @@ object PrivilegeManager {
 
         refreshShizuku()
         checkRootSilently()
+    }
+
+    /**
+     * Otomatis meminta akses (dialog Shizuku dan/atau prompt su root) tanpa perlu
+     * layar "Siapkan Akses" terpisah. Dipanggil dari splash screen saat startup.
+     * Root dicoba lebih dulu secara silent (banyak perangkat sudah pernah approve),
+     * lalu Shizuku diminta kalau server-nya sudah hidup dan izinnya belum diberikan.
+     * Aman dipanggil berkali-kali; tidak melakukan apa-apa kalau salah satu backend
+     * sudah aktif.
+     */
+    suspend fun autoRequestAccess() {
+        // Root: cek dulu secara silent, baru minta prompt su kalau memang belum ada.
+        if (!_status.value.rootGranted) {
+            _status.update { it.copy(checkingRoot = true) }
+            val granted = withContext(Dispatchers.IO) {
+                try {
+                    Shell.getShell().isRoot
+                } catch (t: Throwable) {
+                    false
+                }
+            }
+            _status.update { it.copy(rootAvailable = granted, rootGranted = granted, checkingRoot = false) }
+        }
+
+        // Shizuku: hanya minta dialog izin kalau server-nya memang sudah berjalan
+        // (mis. lewat Wireless Debugging / Sui) dan izin belum disetujui.
+        refreshShizuku()
+        if (!_status.value.shizukuGranted && _status.value.shizukuAvailable) {
+            requestShizukuPermission()
+        }
     }
 
     /** Cek ulang status Shizuku (binder hidup + izin) tanpa memunculkan dialog apapun. */
@@ -125,5 +160,53 @@ object PrivilegeManager {
         PrivilegeBackend.SHIZUKU -> ShizukuShellExecutor()
         PrivilegeBackend.ROOT -> RootShellExecutor()
         PrivilegeBackend.NONE -> null
+    }
+
+    // ---------------------------------------------------------------------
+    // Izin pendukung: "Ubah Pengaturan Sistem" (WRITE_SETTINGS), overlay,
+    // dan notifikasi. Bukan pengganti Shizuku/root, tapi membantu beberapa
+    // tweak (mis. baca/tulis Settings.System langsung dari proses AetherX,
+    // overlay crosshair/FPS, dan notifikasi foreground service) berjalan
+    // lebih stabil di berbagai ROM. Semua dicek ulang tiap kali splash
+    // screen tampil dan tiap kali app kembali ke foreground.
+    // ---------------------------------------------------------------------
+
+    /** Cek ulang ketiga izin pendukung sekaligus tanpa memunculkan dialog apapun. */
+    fun refreshSupportingPermissions(context: Context) {
+        val writeSettings = Settings.System.canWrite(context)
+        val overlay = Settings.canDrawOverlays(context)
+        val notifications = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+        _status.update {
+            it.copy(
+                writeSettingsGranted = writeSettings,
+                overlayGranted = overlay,
+                notificationsGranted = notifications,
+            )
+        }
+    }
+
+    /** Buka halaman sistem untuk memberi izin "Ubah Pengaturan Sistem" (WRITE_SETTINGS). */
+    fun requestWriteSettings(context: Context) {
+        if (Settings.System.canWrite(context)) return
+        val intent = Intent(
+            Settings.ACTION_MANAGE_WRITE_SETTINGS,
+            Uri.parse("package:${context.packageName}"),
+        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        runCatching { context.startActivity(intent) }
+    }
+
+    /** Buka halaman sistem untuk memberi izin "Tampil di atas aplikasi lain" (overlay). */
+    fun requestOverlayPermission(context: Context) {
+        if (Settings.canDrawOverlays(context)) return
+        val intent = Intent(
+            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            Uri.parse("package:${context.packageName}"),
+        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        runCatching { context.startActivity(intent) }
     }
 }

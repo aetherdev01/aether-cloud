@@ -3,9 +3,15 @@
     <string name="app_name">AetherX</string>
     <string name="app_tagline">Pelicin Layar untuk Free Fire</string>
 
-    <!-- Onboarding — Setup Permission -->
-    <string name="setup_title">Siapkan Akses</string>
-    <string name="setup_subtitle">AetherX butuh salah satu akses berikut untuk bisa mengatur sensitivitas sentuh, DPI, dan refresh rate perangkatmu.</string>
+    <!-- Splash — auto permission request -->
+    <string name="splash_status_checking">Memeriksa perangkat…</string>
+    <string name="splash_status_access">Menyiapkan akses Shizuku / Root…</string>
+    <string name="splash_status_permissions">Menyiapkan izin sistem…</string>
+    <string name="splash_status_ready">Siap!</string>
+
+    <!-- Onboarding — Setup Permission (dipakai ulang sebagai "Kelola Akses" di halaman utama) -->
+    <string name="setup_title">Kelola Akses</string>
+    <string name="setup_subtitle">AetherX butuh salah satu akses berikut untuk bisa mengatur sensitivitas sentuh, DPI, dan refresh rate perangkatmu. Semua izin ini otomatis diminta saat aplikasi dibuka — halaman ini untuk memeriksa ulang atau memberi izin yang sempat terlewat/ditolak.</string>
     <string name="setup_required_banner">Wajib diaktifkan salah satu sebelum bisa melanjutkan</string>
     <string name="setup_method_shizuku">Shizuku (Tanpa Root)</string>
     <string name="setup_method_shizuku_desc">Cocok untuk HP yang tidak di-root. Perlu aplikasi Shizuku aktif lewat Wireless Debugging.</string>
@@ -24,6 +30,16 @@
     <string name="setup_locked_hint">Aktifkan Shizuku atau Root terlebih dahulu untuk membuka tombol Lanjutkan.</string>
     <string name="setup_ready_hint">Akses siap. Kamu sudah bisa lanjut ke panduan.</string>
 
+    <!-- Onboarding — Izin pendukung (Write Settings, Overlay, Notifikasi) -->
+    <string name="setup_supporting_header">Izin Pendukung</string>
+    <string name="setup_supporting_subtitle">Membantu tweak dan fitur overlay berjalan lebih stabil di perangkatmu.</string>
+    <string name="setup_method_write_settings">Ubah Pengaturan Sistem</string>
+    <string name="setup_method_write_settings_desc">Mengizinkan AetherX membaca/menulis sebagian setelan sistem secara langsung.</string>
+    <string name="setup_method_overlay">Tampil di Atas Aplikasi Lain</string>
+    <string name="setup_method_overlay_desc">Dibutuhkan untuk crosshair dan monitor FPS saat bermain.</string>
+    <string name="setup_method_notifications">Notifikasi</string>
+    <string name="setup_method_notifications_desc">Dibutuhkan supaya layanan overlay tetap berjalan di latar belakang.</string>
+
     <!-- Onboarding — Guide -->
     <string name="guide_skip">Lewati</string>
     <string name="guide_next">Lanjut</string>
@@ -36,6 +52,7 @@
     <string name="guide_body_3">Semua perubahan memakai perintah sistem Android resmi (wm, settings) dan bisa dikembalikan ke pengaturan pabrik kapan saja lewat tombol Reset.</string>
     <string name="guide_title_4">Siap Tweak</string>
     <string name="guide_body_4">Buka tab Tweak, lalu geser slider atau nyalakan saklar sesuai selera. Perubahan langsung aktif di sistem tanpa perlu menekan tombol apapun, termasuk saat main Free Fire.</string>
+
 
     <!-- Bottom navigation -->
     <string name="nav_tweak">Tweak</string>
