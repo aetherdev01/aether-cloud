@@ -26,6 +26,8 @@ data class TweakUiState(
     val touchBoost: Boolean = false,
     val forceMaxRefreshRate: Boolean = false,
     val gameModeEnabled: Boolean = false,
+    val cpuPerformanceMode: Boolean = false,
+    val ramPriorityMode: Boolean = false,
     val message: String? = null,
     val detectedGames: List<DetectedGame> = emptyList(),
     val userId: Int? = null,
@@ -63,6 +65,8 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
                     touchBoost = saved.touchBoostEnabled,
                     forceMaxRefreshRate = saved.forceMaxRefreshRate,
                     gameModeEnabled = saved.gameModeEnabled,
+                    cpuPerformanceMode = saved.cpuPerformanceMode,
+                    ramPriorityMode = saved.ramPriorityMode,
                 )
             }
         }
@@ -120,6 +124,18 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
         applyAndPersist { executor -> repository.applyGameMode(executor, checked) }
     }
 
+    /** Khusus root: kunci semua core CPU ke governor performance selama bermain. */
+    fun onCpuPerformanceModeChange(checked: Boolean) {
+        _state.update { it.copy(cpuPerformanceMode = checked) }
+        applyAndPersist { executor -> repository.applyCpuPerformanceMode(executor, checked) }
+    }
+
+    /** Khusus root: turunkan swappiness kernel supaya game tetap di RAM. */
+    fun onRamPriorityModeChange(checked: Boolean) {
+        _state.update { it.copy(ramPriorityMode = checked) }
+        applyAndPersist { executor -> repository.applyRamPriority(executor, checked) }
+    }
+
     fun consumeMessage() {
         _state.update { it.copy(message = null) }
     }
@@ -132,6 +148,8 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
                 repository.applyTouchBoost(executor, false)
                 repository.applyRefreshRate(executor, enabled = false, maxHz = 60f)
                 repository.applyGameMode(executor, false)
+                repository.applyCpuPerformanceMode(executor, false)
+                repository.applyRamPriority(executor, false)
             }
             preferences.clearTweakState()
             _state.update {
@@ -140,6 +158,8 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
                     touchBoost = false,
                     forceMaxRefreshRate = false,
                     gameModeEnabled = false,
+                    cpuPerformanceMode = false,
+                    ramPriorityMode = false,
                     message = appString(R.string.tweak_reset_toast),
                 )
             }
@@ -163,6 +183,8 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
                 touchBoostEnabled = s.touchBoost,
                 forceMaxRefreshRate = s.forceMaxRefreshRate,
                 gameModeEnabled = s.gameModeEnabled,
+                cpuPerformanceMode = s.cpuPerformanceMode,
+                ramPriorityMode = s.ramPriorityMode,
             )
         }
     }

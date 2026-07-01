@@ -55,6 +55,31 @@ class TweakRepository {
         return executor.exec("settings put global zen_mode $value")
     }
 
+    /**
+     * Khusus root: kunci semua core CPU ke governor "performance" (clock
+     * selalu maksimum) selama bermain, mengurangi micro-stutter akibat
+     * frekuensi naik-turun. Dikembalikan ke "schedutil" (default umum kernel
+     * modern) saat dimatikan. Butuh akses tulis ke /sys/devices/system/cpu,
+     * yang biasanya hanya bisa lewat root (bukan Shizuku/adb shell biasa).
+     */
+    suspend fun applyCpuPerformanceMode(executor: ShellExecutor, enabled: Boolean): ShellResult {
+        val governor = if (enabled) "performance" else "schedutil"
+        return executor.exec(
+            "for g in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo $governor > \$g; done",
+        )
+    }
+
+    /**
+     * Khusus root: turunkan swappiness kernel supaya sistem lebih jarang
+     * menukar (swap) data game ke zram/disk, menjaga proses game tetap di
+     * RAM. Dikembalikan ke nilai default (60) saat dimatikan. Butuh akses
+     * tulis ke /proc/sys/vm, yang biasanya hanya bisa lewat root.
+     */
+    suspend fun applyRamPriority(executor: ShellExecutor, enabled: Boolean): ShellResult {
+        val value = if (enabled) 10 else 60
+        return executor.exec("echo $value > /proc/sys/vm/swappiness")
+    }
+
     suspend fun resetAll(executor: ShellExecutor): List<ShellResult> = listOf(
         resetDensity(executor),
         resetSize(executor),
@@ -62,5 +87,7 @@ class TweakRepository {
         applyTouchBoost(executor, false),
         applyRefreshRate(executor, enabled = false, maxHz = 60f),
         applyGameMode(executor, enabled = false),
+        applyCpuPerformanceMode(executor, enabled = false),
+        applyRamPriority(executor, enabled = false),
     )
 }

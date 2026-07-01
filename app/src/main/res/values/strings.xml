@@ -72,6 +72,13 @@
     <string name="tweak_section_game_mode">Mode Game</string>
     <string name="tweak_game_mode">Aktifkan Mode Game</string>
     <string name="tweak_game_mode_desc">Nyalakan Jangan Ganggu (DND) otomatis supaya notifikasi tidak muncul saat main.</string>
+
+    <!-- Tweak khusus root -->
+    <string name="tweak_section_root">Khusus Root</string>
+    <string name="tweak_cpu_performance">Mode Performa CPU</string>
+    <string name="tweak_cpu_performance_desc">Kunci semua core CPU ke clock speed maksimum (governor performance) selama bermain, mengurangi micro-stutter akibat naik-turun frekuensi. Butuh akses root.</string>
+    <string name="tweak_ram_priority">Prioritas RAM</string>
+    <string name="tweak_ram_priority_desc">Turunkan swappiness kernel supaya sistem lebih jarang menukar data game ke swap/zram, menjaga game tetap di RAM. Butuh akses root.</string>
     <string name="tweak_reset">Reset ke Default Pabrik</string>
     <string name="tweak_reset_toast">Pengaturan dikembalikan ke default</string>
     <string name="tweak_no_access_toast">Aktifkan Shizuku atau Root dulu di menu Pengaturan</string>

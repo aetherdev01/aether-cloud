@@ -34,6 +34,8 @@ data class AppPreferences(
     val touchBoostEnabled: Boolean = false,
     val forceMaxRefreshRate: Boolean = false,
     val gameModeEnabled: Boolean = false,
+    val cpuPerformanceMode: Boolean = false,
+    val ramPriorityMode: Boolean = false,
     val crosshairEnabled: Boolean = false,
     val crosshairStyle: CrosshairStyle = CrosshairStyle.CROSS,
     val crosshairColor: Long = 0xFF00FF66,
@@ -67,6 +69,9 @@ class AetherXPreferences(private val context: Context) {
         val TOUCH_BOOST = booleanPreferencesKey("touch_boost_enabled")
         val FORCE_REFRESH = booleanPreferencesKey("force_max_refresh_rate")
         val GAME_MODE = booleanPreferencesKey("game_mode_enabled")
+        // Khusus root: mode performa CPU (governor) & prioritas RAM (swappiness).
+        val CPU_PERFORMANCE_MODE = booleanPreferencesKey("cpu_performance_mode")
+        val RAM_PRIORITY_MODE = booleanPreferencesKey("ram_priority_mode")
         // Disimpan agar bisa dipulihkan walau aplikasi sempat ditutup,
         // meski nilainya berupa Float (refresh rate target dalam Hz).
         val REFRESH_TARGET = floatPreferencesKey("refresh_target_hz")
@@ -111,6 +116,8 @@ class AetherXPreferences(private val context: Context) {
             touchBoostEnabled = prefs[Keys.TOUCH_BOOST] ?: false,
             forceMaxRefreshRate = prefs[Keys.FORCE_REFRESH] ?: false,
             gameModeEnabled = prefs[Keys.GAME_MODE] ?: false,
+            cpuPerformanceMode = prefs[Keys.CPU_PERFORMANCE_MODE] ?: false,
+            ramPriorityMode = prefs[Keys.RAM_PRIORITY_MODE] ?: false,
             crosshairEnabled = prefs[Keys.CROSSHAIR_ENABLED] ?: false,
             crosshairStyle = prefs[Keys.CROSSHAIR_STYLE]
                 ?.let { runCatching { CrosshairStyle.valueOf(it) }.getOrNull() }
@@ -151,12 +158,16 @@ class AetherXPreferences(private val context: Context) {
         touchBoostEnabled: Boolean,
         forceMaxRefreshRate: Boolean,
         gameModeEnabled: Boolean,
+        cpuPerformanceMode: Boolean = false,
+        ramPriorityMode: Boolean = false,
     ) {
         context.dataStore.edit { prefs ->
             prefs[Keys.POINTER_SPEED] = pointerSpeed
             prefs[Keys.TOUCH_BOOST] = touchBoostEnabled
             prefs[Keys.FORCE_REFRESH] = forceMaxRefreshRate
             prefs[Keys.GAME_MODE] = gameModeEnabled
+            prefs[Keys.CPU_PERFORMANCE_MODE] = cpuPerformanceMode
+            prefs[Keys.RAM_PRIORITY_MODE] = ramPriorityMode
         }
     }
 
@@ -168,6 +179,8 @@ class AetherXPreferences(private val context: Context) {
             prefs[Keys.TOUCH_BOOST] = false
             prefs[Keys.FORCE_REFRESH] = false
             prefs[Keys.GAME_MODE] = false
+            prefs[Keys.CPU_PERFORMANCE_MODE] = false
+            prefs[Keys.RAM_PRIORITY_MODE] = false
         }
     }
 

@@ -12,6 +12,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Bolt
+import androidx.compose.material.icons.outlined.Memory
+import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -33,6 +35,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aether.x.R
+import com.aether.x.core.permission.PrivilegeBackend
+import com.aether.x.core.permission.PrivilegeManager
 import com.aether.x.ui.components.SectionCard
 import com.aether.x.ui.components.StatusPill
 import com.aether.x.ui.components.TweakSlider
@@ -45,6 +49,7 @@ fun TweakScreen(
     viewModel: TweakViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val privilegeStatus by PrivilegeManager.status.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Deteksi ulang game terpasang setiap kali layar Tweak kembali aktif
@@ -116,6 +121,29 @@ fun TweakScreen(
                     checked = state.gameModeEnabled,
                     onCheckedChange = viewModel::onGameModeChange,
                 )
+            }
+
+            // Tweak kernel-level (CPU governor, swappiness) hanya bisa dijalankan
+            // lewat akses root sungguhan — Shizuku/adb shell biasa tidak punya izin
+            // tulis ke /sys atau /proc/sys, jadi section ini disembunyikan sampai
+            // backend aktifnya benar-benar Root.
+            if (privilegeStatus.activeBackend == PrivilegeBackend.ROOT) {
+                SectionCard(title = stringResource(R.string.tweak_section_root)) {
+                    TweakSwitch(
+                        label = stringResource(R.string.tweak_cpu_performance),
+                        description = stringResource(R.string.tweak_cpu_performance_desc),
+                        checked = state.cpuPerformanceMode,
+                        onCheckedChange = viewModel::onCpuPerformanceModeChange,
+                        icon = Icons.Outlined.Speed,
+                    )
+                    TweakSwitch(
+                        label = stringResource(R.string.tweak_ram_priority),
+                        description = stringResource(R.string.tweak_ram_priority_desc),
+                        checked = state.ramPriorityMode,
+                        onCheckedChange = viewModel::onRamPriorityModeChange,
+                        icon = Icons.Outlined.Memory,
+                    )
+                }
             }
 
             OutlinedButton(
