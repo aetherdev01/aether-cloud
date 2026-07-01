@@ -1,7 +1,11 @@
 package com.aether.x.ui.settings
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,7 +19,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -30,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -240,5 +248,75 @@ private fun AboutSection(versionName: String) {
                 )
             }
         }
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            SocialLinkRow(
+                iconRes = R.drawable.ic_social_github,
+                label = stringResource(R.string.settings_social_github),
+                handle = stringResource(R.string.settings_social_github_handle),
+                url = stringResource(R.string.settings_social_github_url),
+            )
+            SocialLinkRow(
+                iconRes = R.drawable.ic_social_telegram,
+                label = stringResource(R.string.settings_social_telegram),
+                handle = stringResource(R.string.settings_social_telegram_handle),
+                url = stringResource(R.string.settings_social_telegram_url),
+            )
+        }
+    }
+}
+
+/**
+ * Baris tautan sosial (GitHub / Telegram) dengan ikon berwarna resmi masing-
+ * masing platform. Ketuk baris untuk membuka tautan di browser/aplikasi.
+ */
+@Composable
+private fun SocialLinkRow(
+    iconRes: Int,
+    label: String,
+    handle: String,
+    url: String,
+) {
+    val context = LocalContext.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .clickable {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                try {
+                    context.startActivity(intent)
+                } catch (e: ActivityNotFoundException) {
+                    // Tidak ada aplikasi/browser yang bisa menangani intent ini — abaikan
+                    // dengan aman daripada membuat aplikasi crash.
+                }
+            }
+            .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Image(
+            painter = painterResource(id = iconRes),
+            contentDescription = label,
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape),
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = label, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = handle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(18.dp),
+        )
     }
 }

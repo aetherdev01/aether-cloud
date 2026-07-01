@@ -7,6 +7,13 @@
     <queries>
         <package android:name="com.dts.freefireth" />
         <package android:name="com.dts.freefire.max" />
+        <!-- Wajib agar Intent.ACTION_VIEW (buka tautan GitHub/Telegram di Tentang)
+             bisa mendeteksi browser/aplikasi yang tersedia di perangkat. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
     </queries>
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />

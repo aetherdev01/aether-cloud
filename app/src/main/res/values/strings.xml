@@ -122,6 +122,12 @@
     <string name="settings_about">AetherX</string>
     <string name="settings_about_tagline">Tweak performa &amp; overlay untuk gaming</string>
     <string name="settings_version">v%1$s</string>
+    <string name="settings_social_github">GitHub</string>
+    <string name="settings_social_github_handle">github.com/aetherdev01</string>
+    <string name="settings_social_github_url">https://github.com/aetherdev01</string>
+    <string name="settings_social_telegram">Telegram</string>
+    <string name="settings_social_telegram_handle">t.me/get01projects</string>
+    <string name="settings_social_telegram_url">https://t.me/get01projects</string>
 
     <!-- Settings — Umum -->
     <string name="settings_section_general">Umum</string>
