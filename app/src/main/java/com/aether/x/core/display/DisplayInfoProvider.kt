@@ -1,8 +1,9 @@
 package com.aether.x.core.display
 
 import android.content.Context
+import android.hardware.display.DisplayManager
 import android.os.Build
-import android.view.WindowManager
+import android.view.Display
 
 data class DisplayInfo(
     val widthPx: Int,
@@ -22,13 +23,15 @@ data class DisplayInfo(
 object DisplayInfoProvider {
 
     fun read(context: Context): DisplayInfo {
-        val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        val display = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            context.display ?: wm.defaultDisplay
-        } else {
-            @Suppress("DEPRECATION")
-            wm.defaultDisplay
-        }
+        // PENTING: jangan pakai context.display / WindowManager.defaultDisplay di sini.
+        // TweakViewModel memanggil fungsi ini dengan Application context (getApplication()),
+        // dan mulai Android R (API 30), context.display akan langsung melempar
+        // UnsupportedOperationException kalau context-nya bukan context "visual"
+        // (Activity / WindowContext). Application context BUKAN context visual,
+        // jadi ini menyebabkan force close instan saat home screen dibuka.
+        // DisplayManager aman dipakai dari context jenis apa pun.
+        val displayManager = context.getSystemService(Context.DISPLAY_SERVICE) as? DisplayManager
+        val display: Display? = displayManager?.getDisplay(Display.DEFAULT_DISPLAY)
 
         val metrics = context.resources.displayMetrics
         val widthPx = metrics.widthPixels
@@ -36,10 +39,11 @@ object DisplayInfoProvider {
         val densityDpi = metrics.densityDpi
 
         val refreshRates = try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                display.supportedModes.map { it.refreshRate }.distinct().sorted()
-            } else {
-                listOf(display.refreshRate)
+            when {
+                display == null -> listOf(60f)
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ->
+                    display.supportedModes.map { it.refreshRate }.distinct().sorted()
+                else -> listOf(display.refreshRate)
             }
         } catch (t: Throwable) {
             listOf(60f)
