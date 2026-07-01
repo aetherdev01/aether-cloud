@@ -136,6 +136,7 @@ class FpsMonitorView(context: Context) : View(context) {
         val cpuText = "CPU ${cpuPercent?.let { "$it%" } ?: "-"}"
         val gpuText = "GPU ${gpuPercent?.let { "$it%" } ?: "-"}"
         val tempText = formattedTemperature()
+        val lineY = dp(33f)
         var x = leftPad
         canvas.drawText(cpuText, x, lineY, smallTextPaint)
         x += smallTextPaint.measureText(cpuText) + dp(7f)
