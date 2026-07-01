@@ -40,8 +40,8 @@ class DeviceRegistry(private val context: Context) {
         const val COLLECTION = "devices"
     }
 
-    @SuppressLint("HardwareIds")
     val deviceId: String
+        @SuppressLint("HardwareIds")
         get() = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
             ?: "unknown"
 

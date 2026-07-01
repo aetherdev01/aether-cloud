@@ -1,7 +1,6 @@
 package com.aether.x.ui.onboarding
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -96,7 +94,7 @@ fun GuideScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
-                    AnimatedVisibility(visible = !isFirstPage) {
+                    androidx.compose.animation.AnimatedVisibility(visible = !isFirstPage) {
                         IconButton(onClick = {
                             scope.launch {
                                 pagerState.animateScrollToPage(pagerState.currentPage - 1)
