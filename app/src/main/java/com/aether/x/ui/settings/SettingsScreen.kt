@@ -1,5 +1,6 @@
 package com.aether.x.ui.settings
 
+import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -55,6 +57,7 @@ fun SettingsScreen(
 ) {
     val prefs by viewModel.state.collectAsStateWithLifecycle()
     val privilegeStatus by PrivilegeManager.status.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     var dragModeActive by remember { mutableStateOf(false) }
     var overlayGranted by remember { mutableStateOf(viewModel.canDrawOverlays()) }
 
@@ -124,7 +127,13 @@ fun SettingsScreen(
                         SegmentedButton(
                             shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
                             selected = prefs.languagePref == pref,
-                            onClick = { viewModel.setLanguagePref(pref) },
+                            onClick = {
+                                viewModel.setLanguagePref(pref)
+                                // ComponentActivity (bukan AppCompatActivity) tidak otomatis
+                                // me-refresh resource string setelah locale diubah — perlu
+                                // di-recreate manual supaya teks di layar langsung berganti.
+                                (context as? Activity)?.recreate()
+                            },
                         ) {
                             Text(label)
                         }
