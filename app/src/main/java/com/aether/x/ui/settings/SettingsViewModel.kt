@@ -1,10 +1,15 @@
 package com.aether.x.ui.settings
 
 import android.app.Application
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.aether.x.core.overlay.CrosshairOverlayService
 import com.aether.x.data.AetherXPreferences
 import com.aether.x.data.AppPreferences
+import com.aether.x.data.CrosshairStyle
 import com.aether.x.data.DarkModePref
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -27,5 +32,63 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun setDarkModePref(pref: DarkModePref) {
         viewModelScope.launch { preferences.setDarkModePref(pref) }
+    }
+
+    /** true kalau izin "Tampil di atas aplikasi lain" sudah diberikan. */
+    fun canDrawOverlays(): Boolean = Settings.canDrawOverlays(getApplication())
+
+    fun openOverlayPermissionSettings() {
+        val app = getApplication<Application>()
+        val intent = Intent(
+            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            Uri.parse("package:${app.packageName}"),
+        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        runCatching { app.startActivity(intent) }
+    }
+
+    fun setCrosshairEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            preferences.setCrosshairEnabled(enabled)
+            val app = getApplication<Application>()
+            if (enabled && canDrawOverlays()) {
+                CrosshairOverlayService.start(app)
+            } else {
+                CrosshairOverlayService.stop(app)
+            }
+        }
+    }
+
+    fun setCrosshairStyle(style: CrosshairStyle) = updateCrosshair { it.copy(crosshairStyle = style) }
+
+    fun setCrosshairColor(color: Long) = updateCrosshair { it.copy(crosshairColor = color) }
+
+    fun setCrosshairSize(size: Int) = updateCrosshair { it.copy(crosshairSize = size) }
+
+    fun setCrosshairThickness(thickness: Int) = updateCrosshair { it.copy(crosshairThickness = thickness) }
+
+    fun setCrosshairOpacity(opacity: Int) = updateCrosshair { it.copy(crosshairOpacity = opacity) }
+
+    fun setDragMode(enabled: Boolean) {
+        CrosshairOverlayService.setDragMode(getApplication(), enabled)
+    }
+
+    fun resetCrosshairPosition() {
+        viewModelScope.launch { preferences.setCrosshairOffset(0, 0) }
+    }
+
+    private fun updateCrosshair(transform: (AppPreferences) -> AppPreferences) {
+        viewModelScope.launch {
+            val current = state.value
+            val updated = transform(current)
+            preferences.saveCrosshairConfig(
+                style = updated.crosshairStyle,
+                color = updated.crosshairColor,
+                size = updated.crosshairSize,
+                thickness = updated.crosshairThickness,
+                opacity = updated.crosshairOpacity,
+                offsetX = updated.crosshairOffsetX,
+                offsetY = updated.crosshairOffsetY,
+            )
+        }
     }
 }

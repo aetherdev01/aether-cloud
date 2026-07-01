@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -13,6 +14,8 @@ import kotlinx.coroutines.flow.map
 private val Context.dataStore by preferencesDataStore(name = "aetherx_prefs")
 
 enum class DarkModePref { SYSTEM, LIGHT, DARK }
+
+enum class CrosshairStyle { CROSS, DOT, CIRCLE, CIRCLE_DOT, PLUS_GAP, X_SHAPE }
 
 data class AppPreferences(
     val onboardingCompleted: Boolean = false,
@@ -23,6 +26,14 @@ data class AppPreferences(
     val pointerSpeed: Int = 0,
     val touchBoostEnabled: Boolean = false,
     val forceMaxRefreshRate: Boolean = false,
+    val crosshairEnabled: Boolean = false,
+    val crosshairStyle: CrosshairStyle = CrosshairStyle.CROSS,
+    val crosshairColor: Long = 0xFF00FF66,
+    val crosshairSize: Int = 32,
+    val crosshairThickness: Int = 3,
+    val crosshairOpacity: Int = 100,
+    val crosshairOffsetX: Int = 0,
+    val crosshairOffsetY: Int = 0,
 )
 
 /**
@@ -43,6 +54,15 @@ class AetherXPreferences(private val context: Context) {
         // Disimpan agar bisa dipulihkan walau aplikasi sempat ditutup,
         // meski nilainya berupa Float (refresh rate target dalam Hz).
         val REFRESH_TARGET = floatPreferencesKey("refresh_target_hz")
+
+        val CROSSHAIR_ENABLED = booleanPreferencesKey("crosshair_enabled")
+        val CROSSHAIR_STYLE = stringPreferencesKey("crosshair_style")
+        val CROSSHAIR_COLOR = longPreferencesKey("crosshair_color")
+        val CROSSHAIR_SIZE = intPreferencesKey("crosshair_size")
+        val CROSSHAIR_THICKNESS = intPreferencesKey("crosshair_thickness")
+        val CROSSHAIR_OPACITY = intPreferencesKey("crosshair_opacity")
+        val CROSSHAIR_OFFSET_X = intPreferencesKey("crosshair_offset_x")
+        val CROSSHAIR_OFFSET_Y = intPreferencesKey("crosshair_offset_y")
     }
 
     val preferences: Flow<AppPreferences> = context.dataStore.data.map { prefs ->
@@ -56,6 +76,16 @@ class AetherXPreferences(private val context: Context) {
             pointerSpeed = prefs[Keys.POINTER_SPEED] ?: 0,
             touchBoostEnabled = prefs[Keys.TOUCH_BOOST] ?: false,
             forceMaxRefreshRate = prefs[Keys.FORCE_REFRESH] ?: false,
+            crosshairEnabled = prefs[Keys.CROSSHAIR_ENABLED] ?: false,
+            crosshairStyle = prefs[Keys.CROSSHAIR_STYLE]
+                ?.let { runCatching { CrosshairStyle.valueOf(it) }.getOrNull() }
+                ?: CrosshairStyle.CROSS,
+            crosshairColor = prefs[Keys.CROSSHAIR_COLOR] ?: 0xFF00FF66,
+            crosshairSize = prefs[Keys.CROSSHAIR_SIZE] ?: 32,
+            crosshairThickness = prefs[Keys.CROSSHAIR_THICKNESS] ?: 3,
+            crosshairOpacity = prefs[Keys.CROSSHAIR_OPACITY] ?: 100,
+            crosshairOffsetX = prefs[Keys.CROSSHAIR_OFFSET_X] ?: 0,
+            crosshairOffsetY = prefs[Keys.CROSSHAIR_OFFSET_Y] ?: 0,
         )
     }
 
@@ -92,6 +122,37 @@ class AetherXPreferences(private val context: Context) {
             prefs[Keys.POINTER_SPEED] = 0
             prefs[Keys.TOUCH_BOOST] = false
             prefs[Keys.FORCE_REFRESH] = false
+        }
+    }
+
+    suspend fun setCrosshairEnabled(value: Boolean) {
+        context.dataStore.edit { it[Keys.CROSSHAIR_ENABLED] = value }
+    }
+
+    suspend fun saveCrosshairConfig(
+        style: CrosshairStyle,
+        color: Long,
+        size: Int,
+        thickness: Int,
+        opacity: Int,
+        offsetX: Int,
+        offsetY: Int,
+    ) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.CROSSHAIR_STYLE] = style.name
+            prefs[Keys.CROSSHAIR_COLOR] = color
+            prefs[Keys.CROSSHAIR_SIZE] = size
+            prefs[Keys.CROSSHAIR_THICKNESS] = thickness
+            prefs[Keys.CROSSHAIR_OPACITY] = opacity
+            prefs[Keys.CROSSHAIR_OFFSET_X] = offsetX
+            prefs[Keys.CROSSHAIR_OFFSET_Y] = offsetY
+        }
+    }
+
+    suspend fun setCrosshairOffset(offsetX: Int, offsetY: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.CROSSHAIR_OFFSET_X] = offsetX
+            prefs[Keys.CROSSHAIR_OFFSET_Y] = offsetY
         }
     }
 }

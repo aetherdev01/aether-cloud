@@ -73,11 +73,44 @@
     <string name="settings_dark_mode_system">Ikuti Sistem</string>
     <string name="settings_dark_mode_light">Terang</string>
     <string name="settings_dark_mode_dark">Gelap</string>
-    <string name="settings_section_access">Akses Sistem</string>
+    <string name="settings_section_crosshair">Crosshair</string>
     <string name="settings_section_other">Lainnya</string>
     <string name="settings_view_guide">Lihat Panduan Lagi</string>
+    <string name="settings_manage_access">Kelola Akses Shizuku / Root</string>
+    <string name="settings_section_about">Tentang</string>
+    <string name="settings_maintainer">Maintainer</string>
+    <string name="settings_maintainer_name">Aldi Ahmad Khoirudin</string>
+    <string name="settings_maintainer_handle">@AetherDev22</string>
     <string name="settings_about">Tentang AetherX</string>
     <string name="settings_version">Versi %1$s</string>
+
+    <!-- Crosshair overlay -->
+    <string name="crosshair_enable">Tampilkan Crosshair</string>
+    <string name="crosshair_enable_desc">Overlay bidik di tengah layar, mirip fitur Game Booster atau PUBG.</string>
+    <string name="crosshair_permission_needed">Butuh izin "Tampil di atas aplikasi lain". Ketuk saklar di atas untuk membuka pengaturan izin.</string>
+    <string name="crosshair_style_label">Bentuk</string>
+    <string name="crosshair_style_cross">Silang</string>
+    <string name="crosshair_style_plus_gap">Silang Celah</string>
+    <string name="crosshair_style_x">Diagonal X</string>
+    <string name="crosshair_style_dot">Titik</string>
+    <string name="crosshair_style_circle">Lingkaran</string>
+    <string name="crosshair_style_circle_dot">Lingkaran + Titik</string>
+    <string name="crosshair_color_label">Warna</string>
+    <string name="crosshair_size_label">Ukuran</string>
+    <string name="crosshair_size_desc">Jangkauan garis atau lingkaran crosshair dari titik tengah.</string>
+    <string name="crosshair_thickness_label">Ketebalan Garis</string>
+    <string name="crosshair_thickness_desc">Semakin tebal, semakin jelas terlihat di layar terang.</string>
+    <string name="crosshair_opacity_label">Transparansi</string>
+    <string name="crosshair_opacity_desc">Atur seberapa menyatu crosshair dengan tampilan game.</string>
+    <string name="crosshair_position_label">Posisi</string>
+    <string name="crosshair_position_desc">Default tepat di tengah layar. Bisa digeser manual sesuai kebutuhan.</string>
+    <string name="crosshair_position_start">Atur Posisi</string>
+    <string name="crosshair_position_done">Selesai Mengatur</string>
+    <string name="crosshair_position_reset_center">Ke Tengah Layar</string>
+    <string name="crosshair_position_drag_hint">Mode atur posisi aktif — tahan dan geser crosshair di layar untuk memindahkannya.</string>
+    <string name="crosshair_notification_channel">Overlay Crosshair</string>
+    <string name="crosshair_notification_title">Crosshair AetherX aktif</string>
+    <string name="crosshair_notification_text">Ketuk untuk membuka pengaturan crosshair</string>
 
     <!-- Generic -->
     <string name="cd_back">Kembali</string>

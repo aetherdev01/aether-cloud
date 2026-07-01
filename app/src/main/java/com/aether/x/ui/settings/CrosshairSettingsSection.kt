@@ -1,0 +1,310 @@
+package com.aether.x.ui.settings
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.aether.x.R
+import com.aether.x.data.CrosshairStyle
+import com.aether.x.ui.components.CrosshairPreview
+import com.aether.x.ui.components.TweakSlider
+import com.aether.x.ui.components.TweakSwitch
+
+private val crosshairColorPalette = listOf(
+    0xFF00FF66L, // hijau — klasik game booster
+    0xFFFF3B30L, // merah
+    0xFF00E5FFL, // cyan
+    0xFFFFD60AL, // kuning
+    0xFFFF2D95L, // magenta
+    0xFFFFFFFFL, // putih
+)
+
+private data class StyleOption(val style: CrosshairStyle, val labelRes: Int)
+
+private val styleOptions = listOf(
+    StyleOption(CrosshairStyle.CROSS, R.string.crosshair_style_cross),
+    StyleOption(CrosshairStyle.PLUS_GAP, R.string.crosshair_style_plus_gap),
+    StyleOption(CrosshairStyle.X_SHAPE, R.string.crosshair_style_x),
+    StyleOption(CrosshairStyle.DOT, R.string.crosshair_style_dot),
+    StyleOption(CrosshairStyle.CIRCLE, R.string.crosshair_style_circle),
+    StyleOption(CrosshairStyle.CIRCLE_DOT, R.string.crosshair_style_circle_dot),
+)
+
+@Composable
+fun CrosshairSettingsSection(
+    enabled: Boolean,
+    style: CrosshairStyle,
+    colorArgb: Long,
+    sizeDp: Int,
+    thicknessDp: Int,
+    opacityPercent: Int,
+    overlayPermissionGranted: Boolean,
+    dragModeActive: Boolean,
+    onEnabledChange: (Boolean) -> Unit,
+    onRequestOverlayPermission: () -> Unit,
+    onStyleChange: (CrosshairStyle) -> Unit,
+    onColorChange: (Long) -> Unit,
+    onSizeChange: (Int) -> Unit,
+    onThicknessChange: (Int) -> Unit,
+    onOpacityChange: (Int) -> Unit,
+    onToggleDragMode: (Boolean) -> Unit,
+    onResetPosition: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        TweakSwitch(
+            label = stringResource(R.string.crosshair_enable),
+            description = stringResource(R.string.crosshair_enable_desc),
+            checked = enabled,
+            onCheckedChange = { checked ->
+                if (checked && !overlayPermissionGranted) {
+                    onRequestOverlayPermission()
+                } else {
+                    onEnabledChange(checked)
+                }
+            },
+        )
+
+        if (!overlayPermissionGranted) {
+            Text(
+                text = stringResource(R.string.crosshair_permission_needed),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+
+        if (enabled) {
+            CrosshairPreview(
+                style = style,
+                color = Color(colorArgb),
+                sizeDp = sizeDp.toFloat(),
+                thicknessDp = thicknessDp.toFloat(),
+                opacityPercent = opacityPercent,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp),
+            )
+
+            Column {
+                Text(
+                    text = stringResource(R.string.crosshair_style_label),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+                StyleGrid(selected = style, onSelect = onStyleChange)
+            }
+
+            Column {
+                Text(
+                    text = stringResource(R.string.crosshair_color_label),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    crosshairColorPalette.forEach { swatch ->
+                        ColorSwatch(
+                            color = swatch,
+                            selected = swatch == colorArgb,
+                            onClick = { onColorChange(swatch) },
+                        )
+                    }
+                }
+            }
+
+            TweakSlider(
+                label = stringResource(R.string.crosshair_size_label),
+                description = stringResource(R.string.crosshair_size_desc),
+                valueText = "${sizeDp}dp",
+                value = sizeDp.toFloat(),
+                range = 12f..80f,
+                steps = 16,
+                onValueChange = { onSizeChange(it.toInt()) },
+            )
+
+            TweakSlider(
+                label = stringResource(R.string.crosshair_thickness_label),
+                description = stringResource(R.string.crosshair_thickness_desc),
+                valueText = "${thicknessDp}dp",
+                value = thicknessDp.toFloat(),
+                range = 1f..12f,
+                steps = 10,
+                onValueChange = { onThicknessChange(it.toInt()) },
+            )
+
+            TweakSlider(
+                label = stringResource(R.string.crosshair_opacity_label),
+                description = stringResource(R.string.crosshair_opacity_desc),
+                valueText = "$opacityPercent%",
+                value = opacityPercent.toFloat(),
+                range = 20f..100f,
+                steps = 7,
+                onValueChange = { onOpacityChange(it.toInt()) },
+            )
+
+            Column {
+                Text(
+                    text = stringResource(R.string.crosshair_position_label),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+                Text(
+                    text = stringResource(R.string.crosshair_position_desc),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 8.dp, top = 2.dp),
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    OutlinedButton(
+                        onClick = { onToggleDragMode(!dragModeActive) },
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Icon(Icons.Filled.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Text(
+                            text = if (dragModeActive) {
+                                stringResource(R.string.crosshair_position_done)
+                            } else {
+                                stringResource(R.string.crosshair_position_start)
+                            },
+                            modifier = Modifier.padding(start = 8.dp),
+                        )
+                    }
+                    OutlinedButton(
+                        onClick = onResetPosition,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Text(
+                            text = stringResource(R.string.crosshair_position_reset_center),
+                            modifier = Modifier.padding(start = 8.dp),
+                        )
+                    }
+                }
+                if (dragModeActive) {
+                    Text(
+                        text = stringResource(R.string.crosshair_position_drag_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StyleGrid(selected: CrosshairStyle, onSelect: (CrosshairStyle) -> Unit) {
+    val rows = styleOptions.chunked(3)
+    Column(
+        modifier = Modifier.padding(top = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        rows.forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                row.forEach { option ->
+                    StyleOptionChip(
+                        label = stringResource(option.labelRes),
+                        style = option.style,
+                        isSelected = option.style == selected,
+                        onClick = { onSelect(option.style) },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StyleOptionChip(
+    label: String,
+    style: CrosshairStyle,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(
+                if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+            )
+            .border(
+                width = if (isSelected) 2.dp else 1.dp,
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                shape = RoundedCornerShape(14.dp),
+            )
+            .clickable(onClick = onClick)
+            .padding(vertical = 10.dp, horizontal = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        CrosshairPreview(
+            style = style,
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            sizeDp = 16f,
+            thicknessDp = 2.5f,
+            opacityPercent = 100,
+            modifier = Modifier.size(44.dp),
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+        )
+    }
+}
+
+@Composable
+private fun ColorSwatch(color: Long, selected: Boolean, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(36.dp)
+            .clip(CircleShape)
+            .background(Color(color))
+            .border(
+                width = if (selected) 3.dp else 1.dp,
+                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                shape = CircleShape,
+            )
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (selected) {
+            Icon(
+                imageVector = Icons.Filled.Check,
+                contentDescription = null,
+                tint = if (color == 0xFFFFFFFFL) Color.Black else Color.White,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+    }
+}
