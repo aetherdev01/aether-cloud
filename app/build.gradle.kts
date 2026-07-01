@@ -26,6 +26,9 @@ android {
         versionName   = "1.0.0"
 
         base.archivesName = "aetherx-v$versionName"
+        ndk {
+            abiFilters += setOf("arm64-v8a", "armeabi-v7a")
+        }
     }
 
     signingConfigs {
