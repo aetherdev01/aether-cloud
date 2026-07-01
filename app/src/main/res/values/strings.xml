@@ -51,12 +51,15 @@
     <string name="tweak_pointer_speed_desc">Mengatur respons gerak sentuh sistem (-7 lambat, 7 cepat).</string>
     <string name="tweak_touch_boost">Touch Sensitivity Boost</string>
     <string name="tweak_touch_boost_desc">Eksperimental — dampaknya tergantung perangkat.</string>
-    <string name="tweak_section_display">Resolusi &amp; DPI</string>
-    <string name="tweak_dpi">Screen DPI</string>
-    <string name="tweak_dpi_desc">DPI lebih tinggi = tampilan lebih rapat dan licin (elemen UI mengecil). DPI lebih rendah = tampilan lebih lebar dan renggang.</string>
-    <string name="tweak_dpi_manual_label">Atur manual (dpi)</string>
-    <string name="tweak_width_projected">≈ %1$d dp lebar layar</string>
-    <string name="tweak_dpi_hint">Resolusi fisik layar tidak diubah — hanya densitas (DPI) yang diterapkan, sama seperti perintah wm density di ADB.</string>
+    <string name="tweak_section_display">Ukuran Tampilan</string>
+    <string name="tweak_dpi">Ukuran Layar</string>
+    <string name="tweak_dpi_desc">Geser ke kiri supaya tampilan lebih rapat dan presisi (pas buat main). Geser ke kanan supaya tampilan lebih lebar dan besar.</string>
+    <string name="tweak_dpi_manual_label">Atur manual (dp)</string>
+    <string name="tweak_width_projected">%1$d dp</string>
+    <string name="tweak_dpi_hint">Satuan dp = ukuran yang sama dipakai di Opsi Pengembang &gt; Ukuran tampilan minimum. Angka lebih kecil = tampilan lebih rapat.</string>
+    <string name="tweak_dpi_preset_compact">Rapat</string>
+    <string name="tweak_dpi_preset_default">Normal</string>
+    <string name="tweak_dpi_preset_wide">Lebar</string>
     <string name="tweak_section_refresh">Refresh Rate</string>
     <string name="tweak_force_refresh">Paksa Refresh Rate Maksimal</string>
     <string name="tweak_force_refresh_desc">Mengunci layar pada refresh rate tertinggi yang didukung.</string>
@@ -66,10 +69,8 @@
     <string name="tweak_reset_toast">Pengaturan dikembalikan ke default</string>
     <string name="tweak_no_access_toast">Aktifkan Shizuku atau Root dulu di menu Pengaturan</string>
 
-    <!-- Tweak screen — game launcher -->
-    <string name="tweak_section_game">Main Sekarang</string>
-    <string name="tweak_game_launch_desc">Terapkan tweak lalu langsung buka game yang terpasang.</string>
-    <string name="tweak_game_open">Buka</string>
+    <!-- Tweak screen — game launcher (floating button) -->
+    <string name="tweak_fab_open_game">Buka %1$s</string>
     <string name="tweak_game_none_installed">Free Fire atau Free Fire MAX tidak terdeteksi di perangkat ini.</string>
     <string name="tweak_game_launch_failed">Gagal membuka game — coba buka manual lewat launcher.</string>
 

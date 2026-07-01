@@ -46,6 +46,25 @@ data class TweakUiState(
     // di Opsi Pengembang -> Ukuran tampilan minimum / Smallest width.
     val projectedWidthDp: Int
         get() = (widthPx.toFloat() * 160f / dpi.toFloat()).toInt()
+
+    // --- Representasi ramah-pengguna dalam dp ---
+    // Slider & input utama dipindah ke satuan "lebar layar" (dp) — satuan yang sama
+    // dengan Opsi Pengembang -> Ukuran tampilan minimum. Ini dikonversi balik ke DPI
+    // sebelum dieksekusi lewat wm density: dpi = widthPx * 160 / widthDp
+    val widthDp: Int
+        get() = projectedWidthDp
+
+    val minWidthDp: Int
+        get() = (widthPx.toFloat() * 160f / maxDpi.toFloat()).toInt()
+
+    val maxWidthDp: Int
+        get() = (widthPx.toFloat() * 160f / minDpi.toFloat()).toInt()
+
+    /** Konversi lebar dp -> DPI aktual, dibatasi ke rentang aman [minDpi, maxDpi]. */
+    fun dpiFromWidthDp(widthDpValue: Int): Int {
+        val raw = (widthPx.toFloat() * 160f / widthDpValue.toFloat()).toInt()
+        return raw.coerceIn(minDpi, maxDpi)
+    }
 }
 
 class TweakViewModel(application: Application) : AndroidViewModel(application) {
@@ -101,6 +120,22 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
     fun onDpiTextChange(text: String) {
         val parsed = text.toIntOrNull() ?: return
         _state.update { it.copy(dpi = parsed.coerceIn(it.minDpi, it.maxDpi)) }
+    }
+
+    /** Slider utama sekarang dalam satuan dp (lebar layar), lebih gampang dipahami awam. */
+    fun onWidthDpChange(value: Float) {
+        _state.update { current ->
+            val clampedWidthDp = value.toInt().coerceIn(current.minWidthDp, current.maxWidthDp)
+            current.copy(dpi = current.dpiFromWidthDp(clampedWidthDp))
+        }
+    }
+
+    fun onWidthDpTextChange(text: String) {
+        val parsed = text.toIntOrNull() ?: return
+        _state.update { current ->
+            val clamped = parsed.coerceIn(current.minWidthDp, current.maxWidthDp)
+            current.copy(dpi = current.dpiFromWidthDp(clamped))
+        }
     }
 
     fun onPointerSpeedChange(value: Float) {

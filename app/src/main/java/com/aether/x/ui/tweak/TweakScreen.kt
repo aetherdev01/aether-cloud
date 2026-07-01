@@ -16,6 +16,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -41,7 +43,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aether.x.R
 import com.aether.x.core.permission.PrivilegeBackend
 import com.aether.x.core.permission.PrivilegeManager
-import com.aether.x.ui.components.GameLaunchCard
 import com.aether.x.ui.components.SectionCard
 import com.aether.x.ui.components.StatusPill
 import com.aether.x.ui.components.TweakSlider
@@ -56,10 +57,11 @@ fun TweakScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val privilegeStatus by PrivilegeManager.status.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    var dpiInput by remember { mutableStateOf(state.dpi.toString()) }
+    var widthDpInput by remember { mutableStateOf(state.widthDp.toString()) }
 
     // Deteksi ulang game terpasang setiap kali layar Tweak kembali aktif
     // (mis. setelah pengguna baru saja memasang Free Fire dari luar app).
+    // Tombol buka game sendiri sekarang tampil sebagai FAB di MainScreen.
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -68,9 +70,9 @@ fun TweakScreen(
         lifecycleOwner.lifecycle.addObserver(observer)
     }
 
-    LaunchedEffect(state.dpi) {
-        if (state.dpi.toString() != dpiInput) {
-            dpiInput = state.dpi.toString()
+    LaunchedEffect(state.widthDp) {
+        if (state.widthDp.toString() != widthDpInput) {
+            widthDpInput = state.widthDp.toString()
         }
     }
 
@@ -94,24 +96,6 @@ fun TweakScreen(
                 hasAccess = privilegeStatus.hasAccess,
             )
 
-            if (state.detectedGames.isNotEmpty()) {
-                SectionCard(title = stringResource(R.string.tweak_section_game)) {
-                    Text(
-                        text = stringResource(R.string.tweak_game_launch_desc),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        state.detectedGames.forEach { game ->
-                            GameLaunchCard(
-                                name = game.displayName,
-                                onOpenClick = { viewModel.launchGame(game.packageName) },
-                            )
-                        }
-                    }
-                }
-            }
-
             SectionCard(title = stringResource(R.string.tweak_section_touch)) {
                 TweakSlider(
                     label = stringResource(R.string.tweak_pointer_speed),
@@ -131,41 +115,57 @@ fun TweakScreen(
             }
 
             SectionCard(title = stringResource(R.string.tweak_section_display)) {
+                // Slider & angka memakai satuan dp (bukan DPI mentah) supaya lebih
+                // mudah dipahami: dp lebih kecil = tampilan lebih rapat/presisi,
+                // dp lebih besar = tampilan lebih lebar/besar. Konversi ke DPI
+                // sistem terjadi otomatis di balik layar (lihat TweakViewModel).
                 TweakSlider(
                     label = stringResource(R.string.tweak_dpi),
                     description = stringResource(R.string.tweak_dpi_desc),
-                    valueText = "${state.dpi} dpi",
-                    value = state.dpi.toFloat(),
-                    range = state.minDpi.toFloat()..state.maxDpi.toFloat(),
-                    steps = ((state.maxDpi - state.minDpi) / 8).coerceAtLeast(1) - 1,
-                    onValueChange = viewModel::onDpiChange,
+                    valueText = stringResource(R.string.tweak_width_projected, state.widthDp),
+                    value = state.widthDp.toFloat(),
+                    range = state.minWidthDp.toFloat()..state.maxWidthDp.toFloat(),
+                    steps = 0,
+                    onValueChange = viewModel::onWidthDpChange,
                 )
+
+                // Preset cepat untuk yang tidak mau geser slider manual.
+                val defaultWidthDp = remember(state.minWidthDp, state.maxWidthDp) {
+                    ((state.minWidthDp + state.maxWidthDp) / 2)
+                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    OutlinedTextField(
-                        value = dpiInput,
-                        onValueChange = { text ->
-                            dpiInput = text.filter { it.isDigit() }
-                            viewModel.onDpiTextChange(dpiInput)
-                        },
-                        label = { Text(stringResource(R.string.tweak_dpi_manual_label)) },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.weight(1f),
+                    FilterChip(
+                        selected = state.widthDp <= state.minWidthDp + (state.maxWidthDp - state.minWidthDp) / 6,
+                        onClick = { viewModel.onWidthDpTextChange(state.minWidthDp.toString()) },
+                        label = { Text(stringResource(R.string.tweak_dpi_preset_compact)) },
+                        colors = FilterChipDefaults.filterChipColors(),
                     )
-                    Text(
-                        text = stringResource(
-                            R.string.tweak_width_projected,
-                            state.projectedWidthDp,
-                        ),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.weight(1f),
+                    FilterChip(
+                        selected = state.dpi == state.displayInfo.densityDpi,
+                        onClick = { viewModel.onDpiChange(state.displayInfo.densityDpi.toFloat()) },
+                        label = { Text(stringResource(R.string.tweak_dpi_preset_default)) },
+                    )
+                    FilterChip(
+                        selected = state.widthDp >= state.maxWidthDp - (state.maxWidthDp - state.minWidthDp) / 6,
+                        onClick = { viewModel.onWidthDpTextChange(state.maxWidthDp.toString()) },
+                        label = { Text(stringResource(R.string.tweak_dpi_preset_wide)) },
                     )
                 }
+
+                OutlinedTextField(
+                    value = widthDpInput,
+                    onValueChange = { text ->
+                        widthDpInput = text.filter { it.isDigit() }
+                        viewModel.onWidthDpTextChange(widthDpInput)
+                    },
+                    label = { Text(stringResource(R.string.tweak_dpi_manual_label)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                )
                 Text(
                     text = stringResource(R.string.tweak_dpi_hint),
                     style = MaterialTheme.typography.bodySmall,
