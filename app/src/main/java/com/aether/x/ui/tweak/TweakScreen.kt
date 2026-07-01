@@ -11,8 +11,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.TouchApp
+import androidx.compose.material.icons.outlined.Bolt
+import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ButtonDefaults
@@ -99,7 +99,7 @@ fun TweakScreen(
                     description = stringResource(R.string.tweak_touch_boost_desc),
                     checked = state.touchBoost,
                     onCheckedChange = viewModel::onTouchBoostChange,
-                    icon = Icons.Filled.TouchApp,
+                    icon = Icons.Outlined.TouchApp,
                 )
             }
 
@@ -111,7 +111,7 @@ fun TweakScreen(
                     ) + " (${state.displayInfo.maxRefreshRate.toInt()}Hz)",
                     checked = state.forceMaxRefreshRate,
                     onCheckedChange = viewModel::onForceRefreshChange,
-                    icon = Icons.Filled.Bolt,
+                    icon = Icons.Outlined.Bolt,
                 )
             }
 

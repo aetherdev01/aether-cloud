@@ -18,9 +18,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.TouchApp
-import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material.icons.outlined.Bolt
+import androidx.compose.material.icons.outlined.TouchApp
+import androidx.compose.material.icons.outlined.VerifiedUser
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -161,7 +161,7 @@ private fun TouchPrecisionIllustration(modifier: Modifier = Modifier) {
             }
         }
         Icon(
-            imageVector = Icons.Filled.TouchApp,
+            imageVector = Icons.Outlined.TouchApp,
             contentDescription = null,
             tint = Color.White,
             modifier = Modifier
@@ -225,7 +225,7 @@ private fun SafeReversibleIllustration(modifier: Modifier = Modifier) {
             }
         }
         Icon(
-            imageVector = Icons.Filled.VerifiedUser,
+            imageVector = Icons.Outlined.VerifiedUser,
             contentDescription = null,
             tint = Color.White,
             modifier = Modifier
@@ -261,7 +261,7 @@ private fun ReadyToTweakIllustration(modifier: Modifier = Modifier) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
-                imageVector = Icons.Filled.Bolt,
+                imageVector = Icons.Outlined.Bolt,
                 contentDescription = null,
                 tint = Color.White,
                 modifier = Modifier

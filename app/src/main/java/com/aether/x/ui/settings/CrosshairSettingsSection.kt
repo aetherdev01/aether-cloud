@@ -13,9 +13,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.MyLocation
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.MyLocation
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -174,7 +174,7 @@ fun CrosshairSettingsSection(
                         onClick = { onToggleDragMode(!dragModeActive) },
                         modifier = Modifier.weight(1f),
                     ) {
-                        Icon(Icons.Filled.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Outlined.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp))
                         Text(
                             text = if (dragModeActive) {
                                 stringResource(R.string.crosshair_position_done)
@@ -188,7 +188,7 @@ fun CrosshairSettingsSection(
                         onClick = onResetPosition,
                         modifier = Modifier.weight(1f),
                     ) {
-                        Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Outlined.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
                         Text(
                             text = stringResource(R.string.crosshair_position_reset_center),
                             modifier = Modifier.padding(start = 8.dp),
@@ -243,7 +243,11 @@ private fun StyleOptionChip(
         modifier = modifier
             .clip(RoundedCornerShape(14.dp))
             .background(
-                if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                if (isSelected) {
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                } else {
+                    MaterialTheme.colorScheme.surface
+                },
             )
             .border(
                 width = if (isSelected) 2.dp else 1.dp,
@@ -288,7 +292,7 @@ private fun ColorSwatch(color: Long, selected: Boolean, onClick: () -> Unit) {
     ) {
         if (selected) {
             Icon(
-                imageVector = Icons.Filled.Check,
+                imageVector = Icons.Outlined.Check,
                 contentDescription = null,
                 tint = if (color == 0xFFFFFFFFL) Color.Black else Color.White,
                 modifier = Modifier.size(18.dp),

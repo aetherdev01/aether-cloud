@@ -17,8 +17,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.LockOpen
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -87,7 +87,7 @@ fun PermissionSetupScreen(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     Icon(
-                        imageVector = if (canContinue) Icons.Filled.LockOpen else Icons.Filled.Lock,
+                        imageVector = if (canContinue) Icons.Outlined.LockOpen else Icons.Outlined.Lock,
                         contentDescription = null,
                         tint = if (canContinue) {
                             MaterialTheme.colorScheme.onPrimaryContainer

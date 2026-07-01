@@ -1,8 +1,8 @@
 package com.aether.x.ui.main
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -52,14 +52,14 @@ fun MainScreen(
                 NavigationBarItem(
                     selected = selectedTab == MainTab.TWEAK,
                     onClick = { selectedTab = MainTab.TWEAK },
-                    icon = { Icon(Icons.Filled.Tune, contentDescription = null) },
+                    icon = { Icon(Icons.Outlined.Tune, contentDescription = null) },
                     label = { Text(stringResource(R.string.nav_tweak)) },
                     colors = aetherNavColors(),
                 )
                 NavigationBarItem(
                     selected = selectedTab == MainTab.SETTINGS,
                     onClick = { selectedTab = MainTab.SETTINGS },
-                    icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
+                    icon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
                     label = { Text(stringResource(R.string.nav_settings)) },
                     colors = aetherNavColors(),
                 )
