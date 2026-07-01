@@ -6,15 +6,20 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.aether.x.core.permission.PrivilegeManager
 import com.aether.x.data.AetherXPreferences
 import com.aether.x.data.AppPreferences
 import com.aether.x.data.DarkModePref
@@ -76,6 +81,23 @@ private fun AetherXRoot(
     val navController = rememberNavController()
     val scope = rememberCoroutineScope()
     val startDestination = if (onboardingCompleted) AetherXRoutes.MAIN else AetherXRoutes.SETUP_ONBOARDING
+
+    // Setelah onboarding selesai, app tidak lagi lewat SplashScreen (yang
+    // sebelumnya satu-satunya tempat status Shizuku/root dicek ulang secara
+    // akurat). Tanpa ini, status privilese jadi "basi" tiap app dibuka ulang
+    // (mis. root terlihat hilang padahal masih diizinkan) karena tidak pernah
+    // dicek lagi setelah proses app dimulai. Observer ini memastikan status
+    // selalu di-refresh setiap kali app kembali ke foreground, di halaman manapun.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                PrivilegeManager.refreshAll()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     NavHost(navController = navController, startDestination = startDestination) {
         composable(AetherXRoutes.SETUP_ONBOARDING) {

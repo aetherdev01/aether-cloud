@@ -126,18 +126,43 @@ object PrivilegeManager {
         }
     }
 
-    /** Cek cepat & non-intrusif: apakah root sudah pernah disetujui sebelumnya. */
+    /**
+     * Cek cepat & non-intrusif: apakah root sudah pernah disetujui sebelumnya.
+     *
+     * PENTING: sengaja memakai `Shell.getShell().isRoot` (bukan
+     * `Shell.isAppGrantedRoot()`) karena yang terakhir hanya membaca status
+     * shell yang SUDAH ada di proses ini — begitu proses app baru dimulai
+     * (mis. app dibuka ulang / di-swipe lalu dibuka lagi), belum ada shell
+     * sama sekali sehingga selalu balik `false`/`null` walau root sebenarnya
+     * masih diizinkan. `Shell.getShell()` benar-benar mencoba membangun shell
+     * root; kalau sudah pernah disetujui sebelumnya, Magisk/KernelSU/APatch
+     * akan meloloskannya tanpa dialog apapun — jadi tetap "silent" di mata
+     * pengguna, tapi hasilnya akurat.
+     */
     fun checkRootSilently() {
         scope.launch {
+            _status.update { it.copy(checkingRoot = true) }
             val granted = withContext(Dispatchers.IO) {
                 try {
-                    Shell.isAppGrantedRoot() == true
+                    Shell.getShell().isRoot
                 } catch (t: Throwable) {
                     false
                 }
             }
-            _status.update { it.copy(rootAvailable = granted, rootGranted = granted) }
+            _status.update { it.copy(rootAvailable = granted, rootGranted = granted, checkingRoot = false) }
         }
+    }
+
+    /**
+     * Cek ulang SEMUA backend privilese (Shizuku + root) sekaligus, tanpa
+     * memunculkan dialog apapun. Dipanggil tiap kali app kembali ke
+     * foreground (lihat [com.aether.x.MainActivity]) supaya status akses
+     * tidak pernah "basi" — mis. kalau root/Shizuku sempat dicabut atau
+     * server Shizuku sempat mati lalu hidup lagi saat app di-background.
+     */
+    fun refreshAll() {
+        refreshShizuku()
+        checkRootSilently()
     }
 
     /** Memicu prompt superuser (su) dari Magisk/KernelSU/APatch. */
