@@ -71,6 +71,7 @@
 
     <!-- Tweak screen — game launcher (floating button) -->
     <string name="tweak_fab_open_game">Buka %1$s</string>
+    <string name="tweak_game_open">Buka</string>
     <string name="tweak_game_none_installed">Free Fire atau Free Fire MAX tidak terdeteksi di perangkat ini.</string>
     <string name="tweak_game_launch_failed">Gagal membuka game — coba buka manual lewat launcher.</string>
 
