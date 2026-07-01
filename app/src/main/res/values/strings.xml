@@ -54,6 +54,9 @@
     <string name="tweak_section_refresh">Refresh Rate</string>
     <string name="tweak_force_refresh">Paksa Refresh Rate Maksimal</string>
     <string name="tweak_force_refresh_desc">Mengunci layar pada refresh rate tertinggi yang didukung.</string>
+    <string name="tweak_section_game_mode">Mode Game</string>
+    <string name="tweak_game_mode">Aktifkan Mode Game</string>
+    <string name="tweak_game_mode_desc">Nyalakan Jangan Ganggu (DND) otomatis supaya notifikasi tidak muncul saat main.</string>
     <string name="tweak_reset">Reset ke Default Pabrik</string>
     <string name="tweak_reset_toast">Pengaturan dikembalikan ke default</string>
     <string name="tweak_no_access_toast">Aktifkan Shizuku atau Root dulu di menu Pengaturan</string>
@@ -100,21 +103,11 @@
     <string name="settings_about_tagline">Tweak performa &amp; overlay untuk gaming</string>
     <string name="settings_version">v%1$s</string>
 
-    <!-- Settings — Bahasa -->
-    <string name="settings_section_language">Bahasa</string>
-    <string name="settings_language_label">Bahasa Aplikasi</string>
-    <string name="settings_language_indonesian">Indonesia</string>
-    <string name="settings_language_english">Inggris</string>
-
-    <!-- Settings — Satuan suhu -->
+    <!-- Settings — Umum -->
+    <string name="settings_section_general">Umum</string>
     <string name="settings_temperature_unit_label">Satuan Suhu</string>
     <string name="settings_temperature_unit_celsius">Celsius (°C)</string>
     <string name="settings_temperature_unit_fahrenheit">Fahrenheit (°F)</string>
-
-    <!-- Settings — Haptic -->
-    <string name="settings_section_interaction">Interaksi</string>
-    <string name="settings_haptic_feedback">Getaran Umpan Balik</string>
-    <string name="settings_haptic_feedback_desc">Getaran halus saat mengetuk saklar dan tombol.</string>
 
     <!-- Crosshair overlay -->
     <string name="crosshair_enable">Tampilkan Crosshair</string>

@@ -111,6 +111,15 @@ fun TweakScreen(
                 )
             }
 
+            SectionCard(title = stringResource(R.string.tweak_section_game_mode)) {
+                TweakSwitch(
+                    label = stringResource(R.string.tweak_game_mode),
+                    description = stringResource(R.string.tweak_game_mode_desc),
+                    checked = state.gameModeEnabled,
+                    onCheckedChange = viewModel::onGameModeChange,
+                )
+            }
+
             OutlinedButton(
                 onClick = viewModel::resetTweaks,
                 modifier = Modifier.fillMaxWidth(),

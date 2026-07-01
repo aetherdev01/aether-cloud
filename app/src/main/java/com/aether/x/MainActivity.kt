@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -19,7 +18,6 @@ import androidx.navigation.compose.rememberNavController
 import com.aether.x.data.AetherXPreferences
 import com.aether.x.data.AppPreferences
 import com.aether.x.data.DarkModePref
-import com.aether.x.ui.components.LocalHapticEnabled
 import com.aether.x.ui.main.MainScreen
 import com.aether.x.ui.navigation.AetherXRoutes
 import com.aether.x.ui.onboarding.GuideScreen
@@ -59,14 +57,10 @@ class MainActivity : ComponentActivity() {
                     darkTheme = darkTheme,
                     useDynamicColor = prefsValue.dynamicColorEnabled,
                 ) {
-                    CompositionLocalProvider(
-                        LocalHapticEnabled provides prefsValue.hapticFeedbackEnabled,
-                    ) {
-                        AetherXRoot(
-                            onboardingCompleted = prefsValue.onboardingCompleted,
-                            preferences = preferences,
-                        )
-                    }
+                    AetherXRoot(
+                        onboardingCompleted = prefsValue.onboardingCompleted,
+                        preferences = preferences,
+                    )
                 }
             }
         }

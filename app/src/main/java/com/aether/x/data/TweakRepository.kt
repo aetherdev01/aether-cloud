@@ -44,11 +44,23 @@ class TweakRepository {
         }
     }
 
+    /**
+     * Mode Game: mengaktifkan Do Not Disturb (zen mode) sistem lewat `settings put global
+     * zen_mode`, supaya notifikasi tidak mengganggu saat bermain. zen_mode 1 = DND penuh
+     * (Total Silence-setara di sebagian ROM), 0 = kembali normal. Sama seperti perintah
+     * `adb shell settings put global zen_mode 1`, hanya dijalankan lewat Shizuku/root.
+     */
+    suspend fun applyGameMode(executor: ShellExecutor, enabled: Boolean): ShellResult {
+        val value = if (enabled) 1 else 0
+        return executor.exec("settings put global zen_mode $value")
+    }
+
     suspend fun resetAll(executor: ShellExecutor): List<ShellResult> = listOf(
         resetDensity(executor),
         resetSize(executor),
         applyPointerSpeed(executor, 0),
         applyTouchBoost(executor, false),
         applyRefreshRate(executor, enabled = false, maxHz = 60f),
+        applyGameMode(executor, enabled = false),
     )
 }

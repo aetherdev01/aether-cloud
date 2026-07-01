@@ -25,7 +25,7 @@ android {
         versionCode   = 1
         versionName   = "1.0.0"
 
-        base.archivesName = "aetherx-v$versionName"
+        base.archivesName = "AetherX-v$versionName"
         ndk {
             abiFilters += setOf("arm64-v8a", "armeabi-v7a")
         }

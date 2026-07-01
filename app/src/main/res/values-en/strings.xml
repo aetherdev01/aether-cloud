@@ -54,6 +54,9 @@
     <string name="tweak_section_refresh">Refresh Rate</string>
     <string name="tweak_force_refresh">Force Maximum Refresh Rate</string>
     <string name="tweak_force_refresh_desc">Locks the screen to the highest supported refresh rate.</string>
+    <string name="tweak_section_game_mode">Game Mode</string>
+    <string name="tweak_game_mode">Enable Game Mode</string>
+    <string name="tweak_game_mode_desc">Automatically turn on Do Not Disturb so notifications don't pop up while playing.</string>
     <string name="tweak_reset">Reset to Factory Default</string>
     <string name="tweak_reset_toast">Settings restored to default</string>
     <string name="tweak_no_access_toast">Enable Shizuku or Root first in the Settings menu</string>
@@ -128,21 +131,11 @@
     <string name="crosshair_notification_title">AetherX Crosshair is active</string>
     <string name="crosshair_notification_text">Tap to open crosshair settings</string>
 
-    <!-- Settings — Language -->
-    <string name="settings_section_language">Language</string>
-    <string name="settings_language_label">App Language</string>
-    <string name="settings_language_indonesian">Indonesian</string>
-    <string name="settings_language_english">English</string>
-
-    <!-- Settings — Temperature unit -->
+    <!-- Settings — General -->
+    <string name="settings_section_general">General</string>
     <string name="settings_temperature_unit_label">Temperature Unit</string>
     <string name="settings_temperature_unit_celsius">Celsius (°C)</string>
     <string name="settings_temperature_unit_fahrenheit">Fahrenheit (°F)</string>
-
-    <!-- Settings — Haptics -->
-    <string name="settings_section_interaction">Interaction</string>
-    <string name="settings_haptic_feedback">Haptic Feedback</string>
-    <string name="settings_haptic_feedback_desc">Subtle vibration when tapping switches and buttons.</string>
 
     <!-- Generic -->
     <string name="cd_back">Back</string>

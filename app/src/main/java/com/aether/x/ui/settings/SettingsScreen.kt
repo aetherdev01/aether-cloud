@@ -1,6 +1,5 @@
 package com.aether.x.ui.settings
 
-import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,7 +28,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -42,7 +40,6 @@ import com.aether.x.BuildConfig
 import com.aether.x.R
 import com.aether.x.core.permission.PrivilegeManager
 import com.aether.x.data.DarkModePref
-import com.aether.x.data.LanguagePref
 import com.aether.x.data.TemperatureUnit
 import com.aether.x.ui.components.SectionCard
 import com.aether.x.ui.components.TweakSwitch
@@ -57,7 +54,6 @@ fun SettingsScreen(
 ) {
     val prefs by viewModel.state.collectAsStateWithLifecycle()
     val privilegeStatus by PrivilegeManager.status.collectAsStateWithLifecycle()
-    val context = LocalContext.current
     var dragModeActive by remember { mutableStateOf(false) }
     var overlayGranted by remember { mutableStateOf(viewModel.canDrawOverlays()) }
 
@@ -111,36 +107,7 @@ fun SettingsScreen(
             }
         }
 
-        SectionCard(title = stringResource(R.string.settings_section_language)) {
-            Column {
-                Text(
-                    text = stringResource(R.string.settings_language_label),
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                    val options = listOf(
-                        LanguagePref.SYSTEM to stringResource(R.string.settings_dark_mode_system),
-                        LanguagePref.INDONESIAN to stringResource(R.string.settings_language_indonesian),
-                        LanguagePref.ENGLISH to stringResource(R.string.settings_language_english),
-                    )
-                    options.forEachIndexed { index, (pref, label) ->
-                        SegmentedButton(
-                            shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
-                            selected = prefs.languagePref == pref,
-                            onClick = {
-                                viewModel.setLanguagePref(pref)
-                                // ComponentActivity (bukan AppCompatActivity) tidak otomatis
-                                // me-refresh resource string setelah locale diubah — perlu
-                                // di-recreate manual supaya teks di layar langsung berganti.
-                                (context as? Activity)?.recreate()
-                            },
-                        ) {
-                            Text(label)
-                        }
-                    }
-                }
-            }
-
+        SectionCard(title = stringResource(R.string.settings_section_general)) {
             Column {
                 Text(
                     text = stringResource(R.string.settings_temperature_unit_label),
@@ -162,15 +129,6 @@ fun SettingsScreen(
                     }
                 }
             }
-        }
-
-        SectionCard(title = stringResource(R.string.settings_section_interaction)) {
-            TweakSwitch(
-                label = stringResource(R.string.settings_haptic_feedback),
-                description = stringResource(R.string.settings_haptic_feedback_desc),
-                checked = prefs.hapticFeedbackEnabled,
-                onCheckedChange = viewModel::setHapticFeedbackEnabled,
-            )
         }
 
         SectionCard(title = stringResource(R.string.settings_section_crosshair)) {

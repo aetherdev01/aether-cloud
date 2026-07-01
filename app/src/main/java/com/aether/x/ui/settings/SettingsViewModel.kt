@@ -4,8 +4,6 @@ import android.app.Application
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.aether.x.core.overlay.CrosshairOverlayService
@@ -15,7 +13,6 @@ import com.aether.x.data.AppPreferences
 import com.aether.x.data.CrosshairStyle
 import com.aether.x.data.DarkModePref
 import com.aether.x.data.FpsMonitorStyle
-import com.aether.x.data.LanguagePref
 import com.aether.x.data.TemperatureUnit
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -40,26 +37,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch { preferences.setDarkModePref(pref) }
     }
 
-    /** Mengubah bahasa aplikasi secara langsung lewat AppCompatDelegate,
-     *  terpisah dari bahasa sistem perangkat (per-app language, Android resmi). */
-    fun setLanguagePref(pref: LanguagePref) {
-        viewModelScope.launch {
-            preferences.setLanguagePref(pref)
-            val localeList = when (pref) {
-                LanguagePref.SYSTEM -> LocaleListCompat.getEmptyLocaleList()
-                LanguagePref.INDONESIAN -> LocaleListCompat.forLanguageTags("id")
-                LanguagePref.ENGLISH -> LocaleListCompat.forLanguageTags("en")
-            }
-            AppCompatDelegate.setApplicationLocales(localeList)
-        }
-    }
-
     fun setTemperatureUnit(unit: TemperatureUnit) {
         viewModelScope.launch { preferences.setTemperatureUnit(unit) }
-    }
-
-    fun setHapticFeedbackEnabled(enabled: Boolean) {
-        viewModelScope.launch { preferences.setHapticFeedbackEnabled(enabled) }
     }
 
     /** true kalau izin "Tampil di atas aplikasi lain" sudah diberikan. */

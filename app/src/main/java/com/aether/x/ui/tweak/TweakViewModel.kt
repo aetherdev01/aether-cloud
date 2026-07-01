@@ -24,6 +24,7 @@ data class TweakUiState(
     val pointerSpeed: Int = 0,
     val touchBoost: Boolean = false,
     val forceMaxRefreshRate: Boolean = false,
+    val gameModeEnabled: Boolean = false,
     val message: String? = null,
     val detectedGames: List<DetectedGame> = emptyList(),
 )
@@ -58,6 +59,7 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
                     pointerSpeed = saved.pointerSpeed,
                     touchBoost = saved.touchBoostEnabled,
                     forceMaxRefreshRate = saved.forceMaxRefreshRate,
+                    gameModeEnabled = saved.gameModeEnabled,
                 )
             }
         }
@@ -100,6 +102,13 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /** Mode Game: mengaktifkan Do Not Disturb sistem supaya notifikasi tidak
+     *  mengganggu saat bermain. Dinonaktifkan lagi lewat switch yang sama. */
+    fun onGameModeChange(checked: Boolean) {
+        _state.update { it.copy(gameModeEnabled = checked) }
+        applyAndPersist { executor -> repository.applyGameMode(executor, checked) }
+    }
+
     fun consumeMessage() {
         _state.update { it.copy(message = null) }
     }
@@ -111,6 +120,7 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
                 repository.applyPointerSpeed(executor, 0)
                 repository.applyTouchBoost(executor, false)
                 repository.applyRefreshRate(executor, enabled = false, maxHz = 60f)
+                repository.applyGameMode(executor, false)
             }
             preferences.clearTweakState()
             _state.update {
@@ -118,6 +128,7 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
                     pointerSpeed = 0,
                     touchBoost = false,
                     forceMaxRefreshRate = false,
+                    gameModeEnabled = false,
                     message = appString(R.string.tweak_reset_toast),
                 )
             }
@@ -140,6 +151,7 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
                 pointerSpeed = s.pointerSpeed,
                 touchBoostEnabled = s.touchBoost,
                 forceMaxRefreshRate = s.forceMaxRefreshRate,
+                gameModeEnabled = s.gameModeEnabled,
             )
         }
     }
