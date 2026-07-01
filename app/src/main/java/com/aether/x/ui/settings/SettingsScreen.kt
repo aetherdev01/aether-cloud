@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -122,13 +122,15 @@ fun SettingsScreen(
             )
         }
 
-        SectionCard(title = stringResource(R.string.settings_section_other)) {
-            Button(onClick = onViewGuideAgain, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.settings_view_guide))
-            }
-            Button(onClick = onManageAccess, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.settings_manage_access))
-            }
+        SectionCard(title = stringResource(R.string.settings_section_fps_monitor)) {
+            FpsMonitorSettingsSection(
+                enabled = prefs.fpsMonitorEnabled,
+                style = prefs.fpsMonitorStyle,
+                overlayPermissionGranted = overlayGranted,
+                onEnabledChange = viewModel::setFpsMonitorEnabled,
+                onRequestOverlayPermission = viewModel::openOverlayPermissionSettings,
+                onStyleChange = viewModel::setFpsMonitorStyle,
+            )
         }
 
         SectionCard(title = stringResource(R.string.settings_section_about)) {
@@ -155,6 +157,12 @@ fun SettingsScreen(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+            OutlinedButton(onClick = onViewGuideAgain, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.settings_view_guide))
+            }
+            OutlinedButton(onClick = onManageAccess, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.settings_manage_access))
             }
         }
     }

@@ -7,10 +7,12 @@ import android.provider.Settings
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.aether.x.core.overlay.CrosshairOverlayService
+import com.aether.x.core.overlay.FpsMonitorOverlayService
 import com.aether.x.data.AetherXPreferences
 import com.aether.x.data.AppPreferences
 import com.aether.x.data.CrosshairStyle
 import com.aether.x.data.DarkModePref
+import com.aether.x.data.FpsMonitorStyle
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -74,6 +76,22 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun resetCrosshairPosition() {
         viewModelScope.launch { preferences.setCrosshairOffset(0, 0) }
+    }
+
+    fun setFpsMonitorEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            preferences.setFpsMonitorEnabled(enabled)
+            val app = getApplication<Application>()
+            if (enabled && canDrawOverlays()) {
+                FpsMonitorOverlayService.start(app)
+            } else {
+                FpsMonitorOverlayService.stop(app)
+            }
+        }
+    }
+
+    fun setFpsMonitorStyle(style: FpsMonitorStyle) {
+        viewModelScope.launch { preferences.setFpsMonitorStyle(style) }
     }
 
     private fun updateCrosshair(transform: (AppPreferences) -> AppPreferences) {

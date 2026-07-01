@@ -17,6 +17,8 @@ enum class DarkModePref { SYSTEM, LIGHT, DARK }
 
 enum class CrosshairStyle { CROSS, DOT, CIRCLE, CIRCLE_DOT, PLUS_GAP, X_SHAPE }
 
+enum class FpsMonitorStyle { ROG, CLASSIC }
+
 data class AppPreferences(
     val onboardingCompleted: Boolean = false,
     val dynamicColorEnabled: Boolean = true,
@@ -34,6 +36,12 @@ data class AppPreferences(
     val crosshairOpacity: Int = 100,
     val crosshairOffsetX: Int = 0,
     val crosshairOffsetY: Int = 0,
+    val fpsMonitorEnabled: Boolean = false,
+    val fpsMonitorStyle: FpsMonitorStyle = FpsMonitorStyle.CLASSIC,
+    // Offset hanya dipakai oleh gaya ROG (bisa digeser). Gaya Classic selalu
+    // terkunci di pojok kiri bawah layar, tidak memakai offset ini.
+    val fpsMonitorOffsetX: Int = 0,
+    val fpsMonitorOffsetY: Int = 0,
 )
 
 /**
@@ -63,6 +71,11 @@ class AetherXPreferences(private val context: Context) {
         val CROSSHAIR_OPACITY = intPreferencesKey("crosshair_opacity")
         val CROSSHAIR_OFFSET_X = intPreferencesKey("crosshair_offset_x")
         val CROSSHAIR_OFFSET_Y = intPreferencesKey("crosshair_offset_y")
+
+        val FPS_MONITOR_ENABLED = booleanPreferencesKey("fps_monitor_enabled")
+        val FPS_MONITOR_STYLE = stringPreferencesKey("fps_monitor_style")
+        val FPS_MONITOR_OFFSET_X = intPreferencesKey("fps_monitor_offset_x")
+        val FPS_MONITOR_OFFSET_Y = intPreferencesKey("fps_monitor_offset_y")
     }
 
     val preferences: Flow<AppPreferences> = context.dataStore.data.map { prefs ->
@@ -86,6 +99,12 @@ class AetherXPreferences(private val context: Context) {
             crosshairOpacity = prefs[Keys.CROSSHAIR_OPACITY] ?: 100,
             crosshairOffsetX = prefs[Keys.CROSSHAIR_OFFSET_X] ?: 0,
             crosshairOffsetY = prefs[Keys.CROSSHAIR_OFFSET_Y] ?: 0,
+            fpsMonitorEnabled = prefs[Keys.FPS_MONITOR_ENABLED] ?: false,
+            fpsMonitorStyle = prefs[Keys.FPS_MONITOR_STYLE]
+                ?.let { runCatching { FpsMonitorStyle.valueOf(it) }.getOrNull() }
+                ?: FpsMonitorStyle.CLASSIC,
+            fpsMonitorOffsetX = prefs[Keys.FPS_MONITOR_OFFSET_X] ?: 0,
+            fpsMonitorOffsetY = prefs[Keys.FPS_MONITOR_OFFSET_Y] ?: 0,
         )
     }
 
@@ -153,6 +172,21 @@ class AetherXPreferences(private val context: Context) {
         context.dataStore.edit { prefs ->
             prefs[Keys.CROSSHAIR_OFFSET_X] = offsetX
             prefs[Keys.CROSSHAIR_OFFSET_Y] = offsetY
+        }
+    }
+
+    suspend fun setFpsMonitorEnabled(value: Boolean) {
+        context.dataStore.edit { it[Keys.FPS_MONITOR_ENABLED] = value }
+    }
+
+    suspend fun setFpsMonitorStyle(style: FpsMonitorStyle) {
+        context.dataStore.edit { it[Keys.FPS_MONITOR_STYLE] = style.name }
+    }
+
+    suspend fun setFpsMonitorOffset(offsetX: Int, offsetY: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.FPS_MONITOR_OFFSET_X] = offsetX
+            prefs[Keys.FPS_MONITOR_OFFSET_Y] = offsetY
         }
     }
 }

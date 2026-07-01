@@ -59,5 +59,17 @@
                 android:value="crosshair_overlay" />
         </service>
 
+        <!-- Overlay Monitor FPS: sama seperti crosshair, foreground service
+             "specialUse" untuk menampilkan panel statistik (FPS/CPU/GPU/suhu)
+             di atas aplikasi lain. -->
+        <service
+            android:name=".core.overlay.FpsMonitorOverlayService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="fps_monitor_overlay" />
+        </service>
+
     </application>
 </manifest>
