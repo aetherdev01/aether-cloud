@@ -1,5 +1,6 @@
 package com.aether.x.data
 
+import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
@@ -25,10 +26,21 @@ class UserIdRepository(private val preferences: AetherXPreferences) {
     private val firestore by lazy { FirebaseFirestore.getInstance() }
     private val counterRef by lazy { firestore.collection("meta").document("user_counter") }
 
+    private companion object {
+        const val TAG = "UserIdRepository"
+    }
+
     suspend fun resolveUserId(): Int {
         preferences.getSyncedUserId()?.let { return it }
 
-        val allocated = runCatching { allocateFromFirestore() }.getOrNull()
+        val allocated = runCatching { allocateFromFirestore() }
+            .onFailure { e ->
+                // Kalau ini muncul di Logcat sebagai PERMISSION_DENIED, artinya
+                // Firestore rules belum mengizinkan tulis ke meta/user_counter —
+                // cek tab Rules di Firebase Console.
+                Log.w(TAG, "Gagal alokasi ID dari Firestore, pakai fallback lokal", e)
+            }
+            .getOrNull()
         if (allocated != null) {
             preferences.setSyncedUserId(allocated)
             return allocated
