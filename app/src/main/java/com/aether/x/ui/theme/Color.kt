@@ -2,26 +2,33 @@ package com.aether.x.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Brand seed: electric indigo — terasa "techy/gaming" tapi tetap netral di atas putih.
-val BrandPrimary = Color(0xFF5B5FEF)
-val BrandPrimaryDark = Color(0xFFC2C3FF)
-val BrandOnPrimary = Color(0xFFFFFFFF)
-val BrandPrimaryContainer = Color(0xFFE3E2FF)
-val BrandOnPrimaryContainer = Color(0xFF13136B)
+// === AetherX Dark UI ===
+// Palet gelap "hacker/tactical" — biru-abu dingin di atas hitam pekat,
+// bukan lagi M3 default. Referensi: dashboard gelap dengan aksen biru pucat.
 
-val BrandSecondary = Color(0xFF5C5D72)
-val BrandSecondaryContainer = Color(0xFFE1E0F9)
+// Background & surface
+val BgVoid = Color(0xFF0A0A0C)            // background paling belakang (hampir hitam)
+val BgBase = Color(0xFF0D0D10)            // background dasar layar
+val SurfaceCard = Color(0xFF17171C)       // kartu section utama
+val SurfaceCardAlt = Color(0xFF1C1C22)    // kartu bertingkat / hero card
+val SurfaceRaised = Color(0xFF222229)     // elemen di atas kartu (track switch off, dsb)
+val StrokeSubtle = Color(0xFF2A2A32)      // border/divider halus
 
-val BrandTertiary = Color(0xFF7C5295)
-val BrandTertiaryContainer = Color(0xFFF6D9FF)
+// Aksen biru (primary)
+val AccentBlue = Color(0xFF7FA8FF)        // biru pucat khas referensi (judul, ikon aktif)
+val AccentBlueSoft = Color(0xFFAFC6FF)    // biru lebih muda untuk subtitle/link
+val AccentBlueDim = Color(0xFF3D4A6B)     // biru redup untuk track OFF berwarna
+val OnAccentBlue = Color(0xFF0A0F1F)
 
-// Default tema putih sesuai permintaan ("Tema Apk Default Putih").
-val SurfaceLight = Color(0xFFFFFFFF)
-val BackgroundLight = Color(0xFFFFFFFF)
-val SurfaceVariantLight = Color(0xFFF1F0F7)
-val OnSurfaceLight = Color(0xFF1B1B22)
+// Aksen kuning/emas (locked / premium)
+val AccentGold = Color(0xFFE8B84B)
+val AccentGoldDim = Color(0xFF6B5A2E)
 
-val SurfaceDark = Color(0xFF121214)
-val BackgroundDark = Color(0xFF101012)
-val SurfaceVariantDark = Color(0xFF222228)
-val OnSurfaceDark = Color(0xFFE5E4EC)
+// Aksen merah (disconnected/error)
+val AccentRed = Color(0xFFFF6B5E)
+
+// Teks
+val TextPrimary = Color(0xFFF2F3F7)       // putih pudar untuk judul besar
+val TextSecondary = Color(0xFFB9BAC6)     // abu terang untuk body text
+val TextMuted = Color(0xFF7A7B87)         // abu redup untuk caption/disabled
+val TextOnCard = Color(0xFFE7E8EE)

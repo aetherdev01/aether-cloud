@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -97,6 +99,7 @@ fun TweakScreen(
                     description = stringResource(R.string.tweak_touch_boost_desc),
                     checked = state.touchBoost,
                     onCheckedChange = viewModel::onTouchBoostChange,
+                    icon = Icons.Filled.TouchApp,
                 )
             }
 
@@ -108,6 +111,7 @@ fun TweakScreen(
                     ) + " (${state.displayInfo.maxRefreshRate.toInt()}Hz)",
                     checked = state.forceMaxRefreshRate,
                     onCheckedChange = viewModel::onForceRefreshChange,
+                    icon = Icons.Filled.Bolt,
                 )
             }
 
@@ -123,8 +127,19 @@ fun TweakScreen(
             OutlinedButton(
                 onClick = viewModel::resetTweaks,
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp,
+                    MaterialTheme.colorScheme.outlineVariant,
+                ),
             ) {
-                Text(stringResource(R.string.tweak_reset))
+                Text(
+                    text = stringResource(R.string.tweak_reset),
+                    style = MaterialTheme.typography.labelLarge,
+                )
             }
         }
         SnackbarHost(hostState = snackbarHostState)
@@ -140,48 +155,41 @@ private fun TweakHeader(
     activeBackend: PrivilegeBackend,
     hasAccess: Boolean,
 ) {
-    Card(
+    Row(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Top,
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 18.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.nav_tweak),
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                )
-                Text(
-                    text = stringResource(R.string.tweak_subtitle),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
-                    modifier = Modifier.padding(top = 2.dp),
-                )
-            }
-            StatusPill(
-                text = when (activeBackend) {
-                    PrivilegeBackend.SHIZUKU -> stringResource(R.string.tweak_status_active_shizuku)
-                    PrivilegeBackend.ROOT -> stringResource(R.string.tweak_status_active_root)
-                    PrivilegeBackend.NONE -> stringResource(R.string.tweak_status_inactive)
-                },
-                containerColor = if (hasAccess) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.surface
-                },
-                contentColor = if (hasAccess) {
-                    MaterialTheme.colorScheme.onPrimary
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.nav_tweak),
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            Text(
+                text = stringResource(R.string.tweak_subtitle),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 4.dp),
             )
         }
+        StatusPill(
+            text = when (activeBackend) {
+                PrivilegeBackend.SHIZUKU -> stringResource(R.string.tweak_status_active_shizuku)
+                PrivilegeBackend.ROOT -> stringResource(R.string.tweak_status_active_root)
+                PrivilegeBackend.NONE -> stringResource(R.string.tweak_status_inactive)
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = if (hasAccess) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
+            dotColor = if (hasAccess) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                com.aether.x.ui.theme.AccentRed
+            },
+        )
     }
 }

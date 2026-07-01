@@ -79,7 +79,11 @@ fun SettingsScreen(
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text(text = stringResource(R.string.nav_settings), style = MaterialTheme.typography.headlineSmall)
+        Text(
+            text = stringResource(R.string.nav_settings),
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
 
         SectionCard(title = stringResource(R.string.settings_section_appearance)) {
             TweakSwitch(

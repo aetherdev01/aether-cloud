@@ -23,7 +23,7 @@ enum class TemperatureUnit { CELSIUS, FAHRENHEIT }
 
 data class AppPreferences(
     val onboardingCompleted: Boolean = false,
-    val dynamicColorEnabled: Boolean = true,
+    val dynamicColorEnabled: Boolean = false,
     val darkModePref: DarkModePref = DarkModePref.SYSTEM,
     val temperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS,
     val dpiValue: Int = -1,
@@ -87,7 +87,7 @@ class AetherXPreferences(private val context: Context) {
     val preferences: Flow<AppPreferences> = context.dataStore.data.map { prefs ->
         AppPreferences(
             onboardingCompleted = prefs[Keys.ONBOARDING_COMPLETED] ?: false,
-            dynamicColorEnabled = prefs[Keys.DYNAMIC_COLOR] ?: true,
+            dynamicColorEnabled = prefs[Keys.DYNAMIC_COLOR] ?: false,
             darkModePref = prefs[Keys.DARK_MODE]?.let { runCatching { DarkModePref.valueOf(it) }.getOrNull() }
                 ?: DarkModePref.SYSTEM,
             temperatureUnit = prefs[Keys.TEMPERATURE_UNIT]

@@ -3,19 +3,20 @@
 
     <!-- Base app theme. Compose draws its own Material3 theme on top of this;
          this XML theme mainly controls window chrome before Compose attaches
-         (status bar, navigation bar, default background). -->
-    <style name="Theme.AetherX" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:windowBackground">@color/aetherx_white</item>
+         (status bar, navigation bar, default background). AetherX default
+         tampilan sekarang gelap ala tactical dashboard, bukan putih M3. -->
+    <style name="Theme.AetherX" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/aetherx_black</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
-        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
     </style>
 
     <!-- Cold-start splash screen, shown via androidx.core.splashscreen
          before MainActivity's setContent() is called. -->
     <style name="Theme.AetherX.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/aetherx_brand</item>
+        <item name="windowSplashScreenBackground">@color/aetherx_black</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_aetherx_mark</item>
         <item name="postSplashScreenTheme">@style/Theme.AetherX</item>
     </style>
