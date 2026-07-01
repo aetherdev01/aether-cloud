@@ -39,6 +39,7 @@ fun FpsMonitorSettingsSection(
     enabled: Boolean,
     style: FpsMonitorStyle,
     overlayPermissionGranted: Boolean,
+    hasShellAccess: Boolean,
     onEnabledChange: (Boolean) -> Unit,
     onRequestOverlayPermission: () -> Unit,
     onStyleChange: (FpsMonitorStyle) -> Unit,
@@ -94,6 +95,16 @@ fun FpsMonitorSettingsSection(
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            Text(
+                text = stringResource(R.string.fps_monitor_accuracy_disclaimer),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (hasShellAccess) {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                } else {
+                    MaterialTheme.colorScheme.error
+                },
             )
 
             Text(

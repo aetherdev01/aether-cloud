@@ -16,8 +16,10 @@ import android.view.WindowManager
 import androidx.core.app.NotificationCompat
 import com.aether.x.MainActivity
 import com.aether.x.R
-import com.aether.x.core.monitor.FpsCounter
+import com.aether.x.core.apps.GameLauncher
+import com.aether.x.core.monitor.GfxInfoFpsReader
 import com.aether.x.core.monitor.SystemStatsProvider
+import com.aether.x.core.permission.PrivilegeManager
 import com.aether.x.data.AetherXPreferences
 import com.aether.x.data.FpsMonitorStyle
 import kotlinx.coroutines.CoroutineScope
@@ -64,7 +66,7 @@ class FpsMonitorOverlayService : Service() {
     private lateinit var preferences: AetherXPreferences
     private lateinit var windowManager: WindowManager
     private lateinit var statsProvider: SystemStatsProvider
-    private var fpsCounter: FpsCounter? = null
+    private var fpsReader: GfxInfoFpsReader? = null
 
     private var monitorView: FpsMonitorView? = null
     private var layoutParams: WindowManager.LayoutParams? = null
@@ -190,14 +192,28 @@ class FpsMonitorOverlayService : Service() {
     }
 
     private fun startStatsLoop() {
-        if (fpsCounter != null) return
-        fpsCounter = FpsCounter { fps ->
-            monitorView?.fps = fps
-        }.also { it.start() }
+        if (fpsReader != null) return
+
+        // FPS dibaca dari game yang terdeteksi terpasang (Free Fire / Free Fire MAX)
+        // lewat dumpsys gfxinfo, BUKAN dari vsync callback proses AetherX sendiri —
+        // supaya angkanya benar-benar mencerminkan performa render game, bukan Hz layar.
+        val targetPackage = GameLauncher.detectInstalled(applicationContext)
+            .firstOrNull()
+            ?.packageName
+            ?: GameLauncher.PACKAGE_FREE_FIRE
+        fpsReader = GfxInfoFpsReader(targetPackage)
 
         serviceScope.launch {
             while (true) {
                 monitorView?.let { view ->
+                    val executor = PrivilegeManager.getExecutor()
+                    view.fps = if (executor != null) {
+                        fpsReader?.readFps(executor) ?: 0
+                    } else {
+                        // Tanpa Shizuku/Root, FPS asli tidak bisa dibaca — tampilkan 0
+                        // apa adanya daripada memalsukan angka Hz layar.
+                        0
+                    }
                     view.cpuPercent = statsProvider.readCpuLoadPercent()
                     view.gpuPercent = statsProvider.readGpuLoadPercent()
                     view.temperatureCelsius = statsProvider.readTemperatureCelsius(applicationContext)
@@ -253,8 +269,7 @@ class FpsMonitorOverlayService : Service() {
     }
 
     override fun onDestroy() {
-        fpsCounter?.stop()
-        fpsCounter = null
+        fpsReader = null
         monitorView?.let { runCatching { windowManager.removeView(it) } }
         monitorView = null
         serviceScope.coroutineContext[Job]?.cancel()

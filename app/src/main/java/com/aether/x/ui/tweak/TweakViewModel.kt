@@ -9,6 +9,7 @@ import com.aether.x.core.apps.GameLauncher
 import com.aether.x.core.display.DisplayInfo
 import com.aether.x.core.display.DisplayInfoProvider
 import com.aether.x.core.permission.PrivilegeManager
+import com.aether.x.core.shell.ShellExecutor
 import com.aether.x.data.AetherXPreferences
 import com.aether.x.data.TweakRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,53 +21,19 @@ import kotlinx.coroutines.launch
 
 data class TweakUiState(
     val displayInfo: DisplayInfo = DisplayInfo(1080, 2400, 420, listOf(60f)),
-    val dpi: Int = 420,
     val pointerSpeed: Int = 0,
     val touchBoost: Boolean = false,
     val forceMaxRefreshRate: Boolean = false,
-    val applying: Boolean = false,
     val message: String? = null,
     val detectedGames: List<DetectedGame> = emptyList(),
-) {
-    // DPI lebih besar = tampilan lebih "licin"/rapat (UI mengecil, elemen lebih tajam dan padat).
-    // DPI lebih kecil = tampilan lebih lebar/renggang (UI membesar).
-    // Rentang dibatasi supaya tidak sampai bikin UI pecah di banyak perangkat.
-    val minDpi: Int get() = (displayInfo.densityDpi * 0.7f).toInt().coerceAtLeast(120)
-    val maxDpi: Int get() = (displayInfo.densityDpi * 1.6f).toInt()
+)
 
-    // Resolusi fisik (wm size) TIDAK diubah sama sekali oleh tweak DPI.
-    // Nilai wm size mengikuti resolusi asli layar apa adanya; hanya densitas (wm density)
-    // yang diubah. Ini yang membuat efeknya konsisten: DPI naik -> elemen UI mengecil/rapat,
-    // DPI turun -> elemen UI membesar/renggang. Tidak ada lagi slider "lebar" terpisah yang
-    // bentrok secara matematis dengan slider DPI.
-    val widthPx: Int get() = displayInfo.widthPx
-    val heightPx: Int get() = displayInfo.heightPx
-
-    // Perkiraan lebar layar dalam dp pada DPI yang dipilih, seperti yang akan terlihat
-    // di Opsi Pengembang -> Ukuran tampilan minimum / Smallest width.
-    val projectedWidthDp: Int
-        get() = (widthPx.toFloat() * 160f / dpi.toFloat()).toInt()
-
-    // --- Representasi ramah-pengguna dalam dp ---
-    // Slider & input utama dipindah ke satuan "lebar layar" (dp) — satuan yang sama
-    // dengan Opsi Pengembang -> Ukuran tampilan minimum. Ini dikonversi balik ke DPI
-    // sebelum dieksekusi lewat wm density: dpi = widthPx * 160 / widthDp
-    val widthDp: Int
-        get() = projectedWidthDp
-
-    val minWidthDp: Int
-        get() = (widthPx.toFloat() * 160f / maxDpi.toFloat()).toInt()
-
-    val maxWidthDp: Int
-        get() = (widthPx.toFloat() * 160f / minDpi.toFloat()).toInt()
-
-    /** Konversi lebar dp -> DPI aktual, dibatasi ke rentang aman [minDpi, maxDpi]. */
-    fun dpiFromWidthDp(widthDpValue: Int): Int {
-        val raw = (widthPx.toFloat() * 160f / widthDpValue.toFloat()).toInt()
-        return raw.coerceIn(minDpi, maxDpi)
-    }
-}
-
+/**
+ * Semua tweak di layar ini sekarang aktif LANGSUNG saat diubah (slider dilepas /
+ * switch ditoggle) — tidak ada lagi tombol "Terapkan" terpisah. Setiap perubahan
+ * langsung dieksekusi lewat [ShellExecutor] yang aktif (Shizuku/Root) dan disimpan
+ * ke preferences supaya tetap tersimpan walau aplikasi ditutup.
+ */
 class TweakViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = TweakRepository()
@@ -80,7 +47,6 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
         _state.update {
             it.copy(
                 displayInfo = displayInfo,
-                dpi = displayInfo.densityDpi,
                 detectedGames = GameLauncher.detectInstalled(application),
             )
         }
@@ -89,7 +55,6 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
             val saved = preferences.preferences.first()
             _state.update { current ->
                 current.copy(
-                    dpi = if (saved.dpiValue > 0) saved.dpiValue else current.dpi,
                     pointerSpeed = saved.pointerSpeed,
                     touchBoost = saved.touchBoostEnabled,
                     forceMaxRefreshRate = saved.forceMaxRefreshRate,
@@ -112,77 +77,37 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    /** Diisi dari input manual (TextField), bukan hanya slider, agar DPI bisa diketik langsung. */
-    fun onDpiChange(value: Float) {
-        _state.update { it.copy(dpi = value.toInt().coerceIn(it.minDpi, it.maxDpi)) }
-    }
-
-    fun onDpiTextChange(text: String) {
-        val parsed = text.toIntOrNull() ?: return
-        _state.update { it.copy(dpi = parsed.coerceIn(it.minDpi, it.maxDpi)) }
-    }
-
-    /** Slider utama sekarang dalam satuan dp (lebar layar), lebih gampang dipahami awam. */
-    fun onWidthDpChange(value: Float) {
-        _state.update { current ->
-            val clampedWidthDp = value.toInt().coerceIn(current.minWidthDp, current.maxWidthDp)
-            current.copy(dpi = current.dpiFromWidthDp(clampedWidthDp))
-        }
-    }
-
-    fun onWidthDpTextChange(text: String) {
-        val parsed = text.toIntOrNull() ?: return
-        _state.update { current ->
-            val clamped = parsed.coerceIn(current.minWidthDp, current.maxWidthDp)
-            current.copy(dpi = current.dpiFromWidthDp(clamped))
-        }
-    }
-
+    /** Slider hanya update tampilan sambil digeser; eksekusi shell dipicu saat dilepas
+     *  lewat [onPointerSpeedChangeFinished] supaya tidak spam perintah shell tiap piksel. */
     fun onPointerSpeedChange(value: Float) {
         _state.update { it.copy(pointerSpeed = value.toInt()) }
     }
 
+    fun onPointerSpeedChangeFinished() {
+        val speed = _state.value.pointerSpeed
+        applyAndPersist { executor -> repository.applyPointerSpeed(executor, speed) }
+    }
+
     fun onTouchBoostChange(checked: Boolean) {
         _state.update { it.copy(touchBoost = checked) }
+        applyAndPersist { executor -> repository.applyTouchBoost(executor, checked) }
     }
 
     fun onForceRefreshChange(checked: Boolean) {
         _state.update { it.copy(forceMaxRefreshRate = checked) }
+        applyAndPersist { executor ->
+            repository.applyRefreshRate(executor, checked, _state.value.displayInfo.maxRefreshRate)
+        }
     }
 
     fun consumeMessage() {
         _state.update { it.copy(message = null) }
     }
 
-    fun applyTweaks() {
-        val executor = PrivilegeManager.getExecutor()
-        if (executor == null) {
-            _state.update { it.copy(message = appString(R.string.tweak_no_access_toast)) }
-            return
-        }
-        viewModelScope.launch {
-            _state.update { it.copy(applying = true) }
-            val s = _state.value
-            repository.applyDensity(executor, s.dpi)
-            repository.applyPointerSpeed(executor, s.pointerSpeed)
-            repository.applyTouchBoost(executor, s.touchBoost)
-            repository.applyRefreshRate(executor, s.forceMaxRefreshRate, s.displayInfo.maxRefreshRate)
-            preferences.saveTweakState(
-                dpiValue = s.dpi,
-                pointerSpeed = s.pointerSpeed,
-                touchBoostEnabled = s.touchBoost,
-                forceMaxRefreshRate = s.forceMaxRefreshRate,
-            )
-            _state.update { it.copy(applying = false, message = appString(R.string.tweak_applied_toast)) }
-        }
-    }
-
     fun resetTweaks() {
         viewModelScope.launch {
-            _state.update { it.copy(applying = true) }
             val executor = PrivilegeManager.getExecutor()
             if (executor != null) {
-                repository.resetDensity(executor)
                 repository.applyPointerSpeed(executor, 0)
                 repository.applyTouchBoost(executor, false)
                 repository.applyRefreshRate(executor, enabled = false, maxHz = 60f)
@@ -190,14 +115,32 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
             preferences.clearTweakState()
             _state.update {
                 it.copy(
-                    dpi = it.displayInfo.densityDpi,
                     pointerSpeed = 0,
                     touchBoost = false,
                     forceMaxRefreshRate = false,
-                    applying = false,
                     message = appString(R.string.tweak_reset_toast),
                 )
             }
+        }
+    }
+
+    /** Menjalankan satu perintah tweak lewat executor aktif lalu langsung menyimpan
+     *  state tweak saat ini ke preferences. Kalau belum ada akses (Shizuku/Root),
+     *  perubahan tetap tersimpan di UI/preferences tapi menampilkan toast peringatan. */
+    private fun applyAndPersist(action: suspend (ShellExecutor) -> Unit) {
+        viewModelScope.launch {
+            val executor = PrivilegeManager.getExecutor()
+            if (executor == null) {
+                _state.update { it.copy(message = appString(R.string.tweak_no_access_toast)) }
+            } else {
+                action(executor)
+            }
+            val s = _state.value
+            preferences.saveTweakState(
+                pointerSpeed = s.pointerSpeed,
+                touchBoostEnabled = s.touchBoost,
+                forceMaxRefreshRate = s.forceMaxRefreshRate,
+            )
         }
     }
 

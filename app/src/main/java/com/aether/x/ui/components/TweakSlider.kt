@@ -25,6 +25,7 @@ fun TweakSlider(
     steps: Int,
     onValueChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
+    onValueChangeFinished: (() -> Unit)? = null,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
@@ -49,6 +50,7 @@ fun TweakSlider(
         Slider(
             value = value,
             onValueChange = onValueChange,
+            onValueChangeFinished = onValueChangeFinished,
             valueRange = range,
             steps = steps,
             colors = SliderDefaults.colors(

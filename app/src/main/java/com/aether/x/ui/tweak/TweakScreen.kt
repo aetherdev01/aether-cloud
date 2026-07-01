@@ -1,40 +1,30 @@
 package com.aether.x.ui.tweak
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -57,7 +47,6 @@ fun TweakScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val privilegeStatus by PrivilegeManager.status.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    var widthDpInput by remember { mutableStateOf(state.widthDp.toString()) }
 
     // Deteksi ulang game terpasang setiap kali layar Tweak kembali aktif
     // (mis. setelah pengguna baru saja memasang Free Fire dari luar app).
@@ -68,12 +57,6 @@ fun TweakScreen(
             if (event == Lifecycle.Event.ON_RESUME) viewModel.refreshDetectedGames()
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-    }
-
-    LaunchedEffect(state.widthDp) {
-        if (state.widthDp.toString() != widthDpInput) {
-            widthDpInput = state.widthDp.toString()
-        }
     }
 
     LaunchedEffect(state.message) {
@@ -97,6 +80,8 @@ fun TweakScreen(
             )
 
             SectionCard(title = stringResource(R.string.tweak_section_touch)) {
+                // Nilai diterapkan langsung ke sistem saat slider dilepas (tidak perlu
+                // tombol "Terapkan" terpisah lagi).
                 TweakSlider(
                     label = stringResource(R.string.tweak_pointer_speed),
                     description = stringResource(R.string.tweak_pointer_speed_desc),
@@ -105,71 +90,13 @@ fun TweakScreen(
                     range = -7f..7f,
                     steps = 13,
                     onValueChange = viewModel::onPointerSpeedChange,
+                    onValueChangeFinished = viewModel::onPointerSpeedChangeFinished,
                 )
                 TweakSwitch(
                     label = stringResource(R.string.tweak_touch_boost),
                     description = stringResource(R.string.tweak_touch_boost_desc),
                     checked = state.touchBoost,
                     onCheckedChange = viewModel::onTouchBoostChange,
-                )
-            }
-
-            SectionCard(title = stringResource(R.string.tweak_section_display)) {
-                // Slider & angka memakai satuan dp (bukan DPI mentah) supaya lebih
-                // mudah dipahami: dp lebih kecil = tampilan lebih rapat/presisi,
-                // dp lebih besar = tampilan lebih lebar/besar. Konversi ke DPI
-                // sistem terjadi otomatis di balik layar (lihat TweakViewModel).
-                TweakSlider(
-                    label = stringResource(R.string.tweak_dpi),
-                    description = stringResource(R.string.tweak_dpi_desc),
-                    valueText = stringResource(R.string.tweak_width_projected, state.widthDp),
-                    value = state.widthDp.toFloat(),
-                    range = state.minWidthDp.toFloat()..state.maxWidthDp.toFloat(),
-                    steps = 0,
-                    onValueChange = viewModel::onWidthDpChange,
-                )
-
-                // Preset cepat untuk yang tidak mau geser slider manual.
-                val defaultWidthDp = remember(state.minWidthDp, state.maxWidthDp) {
-                    ((state.minWidthDp + state.maxWidthDp) / 2)
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    FilterChip(
-                        selected = state.widthDp <= state.minWidthDp + (state.maxWidthDp - state.minWidthDp) / 6,
-                        onClick = { viewModel.onWidthDpTextChange(state.minWidthDp.toString()) },
-                        label = { Text(stringResource(R.string.tweak_dpi_preset_compact)) },
-                        colors = FilterChipDefaults.filterChipColors(),
-                    )
-                    FilterChip(
-                        selected = state.dpi == state.displayInfo.densityDpi,
-                        onClick = { viewModel.onDpiChange(state.displayInfo.densityDpi.toFloat()) },
-                        label = { Text(stringResource(R.string.tweak_dpi_preset_default)) },
-                    )
-                    FilterChip(
-                        selected = state.widthDp >= state.maxWidthDp - (state.maxWidthDp - state.minWidthDp) / 6,
-                        onClick = { viewModel.onWidthDpTextChange(state.maxWidthDp.toString()) },
-                        label = { Text(stringResource(R.string.tweak_dpi_preset_wide)) },
-                    )
-                }
-
-                OutlinedTextField(
-                    value = widthDpInput,
-                    onValueChange = { text ->
-                        widthDpInput = text.filter { it.isDigit() }
-                        viewModel.onWidthDpTextChange(widthDpInput)
-                    },
-                    label = { Text(stringResource(R.string.tweak_dpi_manual_label)) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Text(
-                    text = stringResource(R.string.tweak_dpi_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
@@ -184,33 +111,11 @@ fun TweakScreen(
                 )
             }
 
-            Row(
+            OutlinedButton(
+                onClick = viewModel::resetTweaks,
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                OutlinedButton(
-                    onClick = viewModel::resetTweaks,
-                    modifier = Modifier.weight(1f),
-                    enabled = !state.applying,
-                ) {
-                    Text(stringResource(R.string.tweak_reset))
-                }
-                Button(
-                    onClick = viewModel::applyTweaks,
-                    modifier = Modifier.weight(1f),
-                    enabled = !state.applying,
-                ) {
-                    if (state.applying) {
-                        CircularProgressIndicator(
-                            modifier = Modifier
-                                .size(20.dp)
-                                .padding(2.dp),
-                            strokeWidth = 2.dp,
-                        )
-                    } else {
-                        Text(stringResource(R.string.tweak_apply))
-                    }
-                }
+                Text(stringResource(R.string.tweak_reset))
             }
         }
         SnackbarHost(hostState = snackbarHostState)

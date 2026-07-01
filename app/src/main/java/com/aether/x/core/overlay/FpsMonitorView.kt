@@ -12,11 +12,15 @@ import com.aether.x.data.FpsMonitorStyle
  * View kustom yang menggambar panel Monitor FPS, dengan dua gaya visual:
  *
  * - [FpsMonitorStyle.ROG]: kartu gelap translusen ala ROG Phone Game Genie —
- *   menampilkan FPS besar + baris kecil CPU/GPU/Suhu, dan BISA digeser bebas
+ *   menampilkan FPS + baris kecil CPU/GPU/Suhu, dan BISA digeser bebas
  *   oleh pengguna (posisi disimpan).
  * - [FpsMonitorStyle.CLASSIC]: pil kompak satu baris "FPS · CPU · Suhu" ala
  *   game booster jadul, SELALU terkunci di pojok kiri bawah layar (tidak bisa
  *   digeser, tidak ada logika drag untuk gaya ini).
+ *
+ * Kedua gaya sengaja dibuat dalam skala ukuran yang mirip (selisih kecil,
+ * bukan beberapa kali lipat) supaya keduanya terasa satu keluarga desain,
+ * hanya beda tata letak & aksen warna.
  */
 class FpsMonitorView(context: Context) : View(context) {
 
@@ -65,9 +69,12 @@ class FpsMonitorView(context: Context) : View(context) {
     private val rect = RectF()
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        // Ukuran ROG & Classic sengaja dibuat berdekatan (selisih kecil), tidak
+        // lagi jauh berbeda seperti sebelumnya, dan keduanya jauh lebih ringkas
+        // supaya tidak menutupi layar game.
         val (w, h) = when (style) {
-            FpsMonitorStyle.ROG -> dp(150f) to dp(72f)
-            FpsMonitorStyle.CLASSIC -> dp(168f) to dp(34f)
+            FpsMonitorStyle.ROG -> dp(116f) to dp(46f)
+            FpsMonitorStyle.CLASSIC -> dp(128f) to dp(28f)
         }
         setMeasuredDimension(w.toInt(), h.toInt())
     }
@@ -83,46 +90,47 @@ class FpsMonitorView(context: Context) : View(context) {
     private fun drawRogStyle(canvas: Canvas) {
         val w = width.toFloat()
         val h = height.toFloat()
-        val corner = dp(14f)
+        val corner = dp(10f)
 
-        // Kartu gelap semi-transparan dengan aksen garis di kiri, mirip Game Genie.
+        // Kartu gelap semi-transparan dengan aksen garis di kiri, mirip Game Genie,
+        // tapi jauh lebih ringkas dari versi sebelumnya.
         bgPaint.color = Color.argb(220, 18, 18, 22)
         rect.set(0f, 0f, w, h)
         canvas.drawRoundRect(rect, corner, corner, bgPaint)
 
         accentPaint.color = Color.parseColor("#FF2C4BFF") // aksen biru khas ROG
-        val accentWidth = dp(4f)
-        val accentRect = RectF(0f, dp(10f), accentWidth, h - dp(10f))
+        val accentWidth = dp(3f)
+        val accentRect = RectF(0f, dp(6f), accentWidth, h - dp(6f))
         canvas.drawRoundRect(accentRect, accentWidth / 2, accentWidth / 2, accentPaint)
 
-        val leftPad = accentWidth + dp(12f)
+        val leftPad = accentWidth + dp(8f)
 
         // Baris besar: FPS
-        bigTextPaint.textSize = dp(22f)
+        bigTextPaint.textSize = dp(15f)
         val fpsLabel = "$fps"
-        canvas.drawText(fpsLabel, leftPad, dp(28f), bigTextPaint)
+        canvas.drawText(fpsLabel, leftPad, dp(19f), bigTextPaint)
 
-        labelTextPaint.textSize = dp(11f)
+        labelTextPaint.textSize = dp(9f)
         val fpsLabelWidth = bigTextPaint.measureText(fpsLabel)
-        canvas.drawText("FPS", leftPad + fpsLabelWidth + dp(4f), dp(28f), labelTextPaint)
+        canvas.drawText("FPS", leftPad + fpsLabelWidth + dp(3f), dp(19f), labelTextPaint)
 
         // Baris kecil: CPU · GPU · Suhu
-        smallTextPaint.textSize = dp(11f)
+        smallTextPaint.textSize = dp(9f)
         val cpuText = "CPU ${cpuPercent?.let { "$it%" } ?: "-"}"
         val gpuText = "GPU ${gpuPercent?.let { "$it%" } ?: "-"}"
         val tempText = temperatureCelsius?.let { "${it.toInt()}°C" } ?: "-°C"
 
-        val lineY = dp(48f)
+        val lineY = dp(33f)
         var x = leftPad
         canvas.drawText(cpuText, x, lineY, smallTextPaint)
-        x += smallTextPaint.measureText(cpuText) + dp(10f)
+        x += smallTextPaint.measureText(cpuText) + dp(7f)
         canvas.drawText(gpuText, x, lineY, smallTextPaint)
-        x += smallTextPaint.measureText(gpuText) + dp(10f)
+        x += smallTextPaint.measureText(gpuText) + dp(7f)
         canvas.drawText(tempText, x, lineY, smallTextPaint)
 
         // Indikator kecil "bisa digeser" di baris paling bawah.
-        labelTextPaint.textSize = dp(9f)
-        canvas.drawText("• geser untuk pindah", leftPad, h - dp(8f), labelTextPaint)
+        labelTextPaint.textSize = dp(7f)
+        canvas.drawText("• geser", leftPad, h - dp(5f), labelTextPaint)
     }
 
     private fun drawClassicStyle(canvas: Canvas) {
@@ -134,24 +142,24 @@ class FpsMonitorView(context: Context) : View(context) {
         rect.set(0f, 0f, w, h)
         canvas.drawRoundRect(rect, corner, corner, bgPaint)
 
-        bigTextPaint.textSize = dp(13f)
-        smallTextPaint.textSize = dp(12f)
+        bigTextPaint.textSize = dp(11f)
+        smallTextPaint.textSize = dp(10f)
 
         val fpsText = "$fps FPS"
         val cpuText = cpuPercent?.let { "CPU $it%" } ?: "CPU -"
         val tempText = temperatureCelsius?.let { "${it.toInt()}°C" } ?: "-°C"
 
-        val padding = dp(12f)
-        val baseline = h / 2f + dp(4.5f)
+        val padding = dp(10f)
+        val baseline = h / 2f + dp(3.8f)
         var x = padding
 
         bigTextPaint.color = Color.parseColor("#FF7CFC00") // hijau klasik game booster
         canvas.drawText(fpsText, x, baseline, bigTextPaint)
-        x += bigTextPaint.measureText(fpsText) + dp(8f)
+        x += bigTextPaint.measureText(fpsText) + dp(6f)
 
         smallTextPaint.color = Color.argb(210, 255, 255, 255)
         canvas.drawText(cpuText, x, baseline, smallTextPaint)
-        x += smallTextPaint.measureText(cpuText) + dp(8f)
+        x += smallTextPaint.measureText(cpuText) + dp(6f)
 
         canvas.drawText(tempText, x, baseline, smallTextPaint)
     }

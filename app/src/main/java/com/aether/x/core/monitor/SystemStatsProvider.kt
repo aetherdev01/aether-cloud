@@ -23,7 +23,8 @@ data class SystemStatsSnapshot(
 
 /**
  * Membaca statistik CPU load, suhu, dan GPU load dari /proc, /sys, dan API resmi.
- * FPS dihitung terpisah oleh [FpsCounter] lewat Choreographer, bukan di sini.
+ * FPS dibaca terpisah oleh [com.aether.x.core.monitor.GfxInfoFpsReader] lewat
+ * `dumpsys gfxinfo`, bukan di sini.
  */
 class SystemStatsProvider {
 

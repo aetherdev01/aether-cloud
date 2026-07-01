@@ -31,6 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aether.x.BuildConfig
 import com.aether.x.R
+import com.aether.x.core.permission.PrivilegeManager
 import com.aether.x.data.DarkModePref
 import com.aether.x.ui.components.SectionCard
 import com.aether.x.ui.components.TweakSwitch
@@ -44,6 +45,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = viewModel(),
 ) {
     val prefs by viewModel.state.collectAsStateWithLifecycle()
+    val privilegeStatus by PrivilegeManager.status.collectAsStateWithLifecycle()
     var dragModeActive by remember { mutableStateOf(false) }
     var overlayGranted by remember { mutableStateOf(viewModel.canDrawOverlays()) }
 
@@ -127,6 +129,7 @@ fun SettingsScreen(
                 enabled = prefs.fpsMonitorEnabled,
                 style = prefs.fpsMonitorStyle,
                 overlayPermissionGranted = overlayGranted,
+                hasShellAccess = privilegeStatus.hasAccess,
                 onEnabledChange = viewModel::setFpsMonitorEnabled,
                 onRequestOverlayPermission = viewModel::openOverlayPermissionSettings,
                 onStyleChange = viewModel::setFpsMonitorStyle,
