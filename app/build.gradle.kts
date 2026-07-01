@@ -32,7 +32,7 @@ android {
         create("release") {
             val storeFilePath = localProperties["STORE_FILE"]
             if (!storeFilePath.isNullOrBlank()) {
-                storeFile     = file(storeFilePath)
+                storeFile     = rootProject.file(storeFilePath)
                 storePassword = localProperties["STORE_PASSWORD"]
                 keyAlias      = localProperties["KEY_ALIAS"]
                 keyPassword   = localProperties["KEY_PASSWORD"]
