@@ -1,4 +1,4 @@
-name: Build Aether Cloud
+name: Build AetherX
 
 on:
   push:
@@ -53,23 +53,13 @@ jobs:
       # ── 7. Setup keystore ────────────────────────────────────────────────────
       - name: Setup signing
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > aether.jks
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > aetherx.jks
           printf '%s\n' \
-            "STORE_FILE=aether.jks" \
+            "STORE_FILE=aetherx.jks" \
             "STORE_PASSWORD=${{ secrets.STORE_PASSWORD }}" \
             "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" \
             "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" \
             > local.properties
-
-      # ── 7b. Setup google-services.json ───────────────────────────────────────
-      # Not committed to the repo (contains API keys), so it's injected here
-      # from a base64 secret. processReleaseGoogleServices looks for this file
-      # at app/src/release/google-services.json (or app/google-services.json),
-      # NOT app/src/main/ — that's why the task failed with "file is missing".
-      - name: Setup google-services.json
-        run: |
-          echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > app/src/release/google-services.json
-          test -s app/src/release/google-services.json || (echo "google-services.json is empty — check the GOOGLE_SERVICES_JSON_BASE64 secret" && exit 1)
 
       # ── 8. Build Release APK ─────────────────────────────────────────────────
       - name: Build Release APK
@@ -79,8 +69,8 @@ jobs:
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: aether-cloud-release-${{ github.run_number }}
-          path: app/build/outputs/apk/release/aether-cloud-v*-release.apk
+          name: aetherx-release-${{ github.run_number }}
+          path: app/build/outputs/apk/release/aetherx-v*-release.apk
           if-no-files-found: error
 
       # ── 10. Kirim APK ke Telegram ────────────────────────────────────────────
@@ -101,7 +91,7 @@ jobs:
           SIZE_MB=$(awk "BEGIN {printf \"%.2f\", ${SIZE_BYTES}/1048576}")
 
           CAPTION=$(printf \
-            '✅ Build <b>Aether Cloud</b> berhasil\n\n📦 <b>File:</b> <code>%s</code>\n🏷 <b>Versi:</b> <code>%s</code>\n💾 <b>Ukuran:</b> <code>%s MB</code>\n🔖 <b>Commit:</b> <code>%s</code> — <a href="%s">lihat detail</a>' \
+            '✅ Build <b>AetherX</b> berhasil\n\n📦 <b>File:</b> <code>%s</code>\n🏷 <b>Versi:</b> <code>%s</code>\n💾 <b>Ukuran:</b> <code>%s MB</code>\n🔖 <b>Commit:</b> <code>%s</code> — <a href="%s">lihat detail</a>' \
             "$APK_NAME" "$VERSION" "$SIZE_MB" "$SHA_SHORT" "$RUN_URL")
 
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument" \
@@ -119,7 +109,7 @@ jobs:
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
           TEXT=$(printf \
-            '❌ Build <b>Aether Cloud</b> gagal\n\n🔖 <b>Commit:</b> <code>%s</code> — <a href="%s">lihat detail</a>' \
+            '❌ Build <b>AetherX</b> gagal\n\n🔖 <b>Commit:</b> <code>%s</code> — <a href="%s">lihat detail</a>' \
             "$SHA_SHORT" "$RUN_URL")
 
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
