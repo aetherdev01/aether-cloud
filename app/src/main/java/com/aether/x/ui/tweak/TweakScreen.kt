@@ -9,9 +9,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -27,14 +30,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aether.x.R
 import com.aether.x.core.permission.PrivilegeBackend
 import com.aether.x.core.permission.PrivilegeManager
+import com.aether.x.ui.components.GameLaunchCard
 import com.aether.x.ui.components.SectionCard
 import com.aether.x.ui.components.StatusPill
 import com.aether.x.ui.components.TweakSlider
@@ -50,6 +57,16 @@ fun TweakScreen(
     val privilegeStatus by PrivilegeManager.status.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var dpiInput by remember { mutableStateOf(state.dpi.toString()) }
+
+    // Deteksi ulang game terpasang setiap kali layar Tweak kembali aktif
+    // (mis. setelah pengguna baru saja memasang Free Fire dari luar app).
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) viewModel.refreshDetectedGames()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+    }
 
     LaunchedEffect(state.dpi) {
         if (state.dpi.toString() != dpiInput) {
@@ -72,29 +89,27 @@ fun TweakScreen(
                 .padding(horizontal = 20.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(text = stringResource(R.string.nav_tweak), style = MaterialTheme.typography.headlineSmall)
-                StatusPill(
-                    text = when (privilegeStatus.activeBackend) {
-                        PrivilegeBackend.SHIZUKU -> stringResource(R.string.tweak_status_active_shizuku)
-                        PrivilegeBackend.ROOT -> stringResource(R.string.tweak_status_active_root)
-                        PrivilegeBackend.NONE -> stringResource(R.string.tweak_status_inactive)
-                    },
-                    containerColor = if (privilegeStatus.hasAccess) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.surfaceVariant
-                    },
-                    contentColor = if (privilegeStatus.hasAccess) {
-                        MaterialTheme.colorScheme.onPrimary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                )
+            TweakHeader(
+                activeBackend = privilegeStatus.activeBackend,
+                hasAccess = privilegeStatus.hasAccess,
+            )
+
+            if (state.detectedGames.isNotEmpty()) {
+                SectionCard(title = stringResource(R.string.tweak_section_game)) {
+                    Text(
+                        text = stringResource(R.string.tweak_game_launch_desc),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        state.detectedGames.forEach { game ->
+                            GameLaunchCard(
+                                name = game.displayName,
+                                onOpenClick = { viewModel.launchGame(game.packageName) },
+                            )
+                        }
+                    }
+                }
             }
 
             SectionCard(title = stringResource(R.string.tweak_section_touch)) {
@@ -199,5 +214,60 @@ fun TweakScreen(
             }
         }
         SnackbarHost(hostState = snackbarHostState)
+    }
+}
+
+/**
+ * Header "hero" di puncak halaman Tweak: judul, subjudul singkat, dan status
+ * akses privilese aktif (Shizuku/Root) sebagai pill kecil yang jelas terlihat.
+ */
+@Composable
+private fun TweakHeader(
+    activeBackend: PrivilegeBackend,
+    hasAccess: Boolean,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.nav_tweak),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+                Text(
+                    text = stringResource(R.string.tweak_subtitle),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+            }
+            StatusPill(
+                text = when (activeBackend) {
+                    PrivilegeBackend.SHIZUKU -> stringResource(R.string.tweak_status_active_shizuku)
+                    PrivilegeBackend.ROOT -> stringResource(R.string.tweak_status_active_root)
+                    PrivilegeBackend.NONE -> stringResource(R.string.tweak_status_inactive)
+                },
+                containerColor = if (hasAccess) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.surface
+                },
+                contentColor = if (hasAccess) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+            )
+        }
     }
 }

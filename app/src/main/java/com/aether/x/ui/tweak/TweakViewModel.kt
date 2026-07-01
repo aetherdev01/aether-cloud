@@ -4,6 +4,8 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.aether.x.R
+import com.aether.x.core.apps.DetectedGame
+import com.aether.x.core.apps.GameLauncher
 import com.aether.x.core.display.DisplayInfo
 import com.aether.x.core.display.DisplayInfoProvider
 import com.aether.x.core.permission.PrivilegeManager
@@ -24,6 +26,7 @@ data class TweakUiState(
     val forceMaxRefreshRate: Boolean = false,
     val applying: Boolean = false,
     val message: String? = null,
+    val detectedGames: List<DetectedGame> = emptyList(),
 ) {
     // DPI lebih besar = tampilan lebih "licin"/rapat (UI mengecil, elemen lebih tajam dan padat).
     // DPI lebih kecil = tampilan lebih lebar/renggang (UI membesar).
@@ -55,7 +58,13 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         val displayInfo = DisplayInfoProvider.read(application)
-        _state.update { it.copy(displayInfo = displayInfo, dpi = displayInfo.densityDpi) }
+        _state.update {
+            it.copy(
+                displayInfo = displayInfo,
+                dpi = displayInfo.densityDpi,
+                detectedGames = GameLauncher.detectInstalled(application),
+            )
+        }
 
         viewModelScope.launch {
             val saved = preferences.preferences.first()
@@ -67,6 +76,20 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
                     forceMaxRefreshRate = saved.forceMaxRefreshRate,
                 )
             }
+        }
+    }
+
+    /** Dipanggil ulang saat layar kembali aktif, untuk menangkap kalau game baru dipasang/dihapus. */
+    fun refreshDetectedGames() {
+        val app = getApplication<Application>()
+        _state.update { it.copy(detectedGames = GameLauncher.detectInstalled(app)) }
+    }
+
+    fun launchGame(packageName: String) {
+        val app = getApplication<Application>()
+        val launched = GameLauncher.launch(app, packageName)
+        if (!launched) {
+            _state.update { it.copy(message = appString(R.string.tweak_game_launch_failed)) }
         }
     }
 

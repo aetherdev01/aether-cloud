@@ -2,6 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.aether.x">
 
+    <!-- Wajib di Android 11+ (API 30) agar getPackageInfo/getLaunchIntentForPackage
+         untuk Free Fire & Free Fire MAX tidak diblokir package visibility filtering. -->
+    <queries>
+        <package android:name="com.dts.freefireth" />
+        <package android:name="com.dts.freefire.max" />
+    </queries>
+
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />

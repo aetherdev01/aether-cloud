@@ -42,9 +42,10 @@
     <string name="nav_settings">Pengaturan</string>
 
     <!-- Tweak screen -->
-    <string name="tweak_status_active_shizuku">Mode aktif: Shizuku</string>
-    <string name="tweak_status_active_root">Mode aktif: Root</string>
-    <string name="tweak_status_inactive">Belum ada akses aktif</string>
+    <string name="tweak_status_active_shizuku">Shizuku</string>
+    <string name="tweak_status_active_root">Root</string>
+    <string name="tweak_status_inactive">Tidak Aktif</string>
+    <string name="tweak_subtitle">Sesuaikan sensitivitas sentuh, tampilan, dan refresh rate perangkatmu.</string>
     <string name="tweak_section_touch">Sensitivitas Sentuh</string>
     <string name="tweak_pointer_speed">Kecepatan Pointer</string>
     <string name="tweak_pointer_speed_desc">Mengatur respons gerak sentuh sistem (-7 lambat, 7 cepat).</string>
@@ -64,6 +65,14 @@
     <string name="tweak_applied_toast">Tweak berhasil diterapkan</string>
     <string name="tweak_reset_toast">Pengaturan dikembalikan ke default</string>
     <string name="tweak_no_access_toast">Aktifkan Shizuku atau Root dulu di menu Pengaturan</string>
+
+    <!-- Tweak screen — game launcher -->
+    <string name="tweak_section_game">Main Sekarang</string>
+    <string name="tweak_game_launch_desc">Terapkan tweak lalu langsung buka game yang terpasang.</string>
+    <string name="tweak_game_open">Buka</string>
+    <string name="tweak_game_none_installed">Free Fire atau Free Fire MAX tidak terdeteksi di perangkat ini.</string>
+    <string name="tweak_game_launch_failed">Gagal membuka game — coba buka manual lewat launcher.</string>
+
 
     <!-- Settings screen -->
     <string name="settings_section_appearance">Tampilan</string>
