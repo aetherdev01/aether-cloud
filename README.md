@@ -55,7 +55,7 @@ akan langsung bisa dipakai di aplikasi Android tanpa perlu ubah apa pun di app.
 
 3. Salin `.env.example` jadi `.env`, lalu isi:
    ```env
-   TELEGRAM_BOT_TOKEN=8699927303:AAEiiP_JLYwyiEMaXlQNzowB_07w0MDlUks
+   TELEGRAM_BOT_TOKEN=123456789:ABCdefGhIJKlmNOPqrsTUVwxyZ-1234567
    ADMIN_TELEGRAM_ID=123456789
    SERVICE_ACCOUNT_PATH=./serviceAccountKey.json
    EXPECTED_PROJECT_ID=aether-cloud-df1ca
