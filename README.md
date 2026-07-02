@@ -28,9 +28,10 @@ licenses/{token}
   note: string (opsional, tambahan dari bot ini — tidak dipakai app)
 ```
 
-Ini identik dengan skema yang dipakai `tools/license-generator-termux/generate_licenses.py`
-dan `LicenseRepository.kt`. Karena skemanya sama, kode yang dibuat lewat bot ini
-akan langsung bisa dipakai di aplikasi Android tanpa perlu ubah apa pun di app.
+Ini identik dengan skema yang dibaca `LicenseRepository.kt` di aplikasi Android.
+Bot ini adalah **satu-satunya** cara resmi membuat lisensi — tidak ada lagi
+script/tool terpisah, semua alur generate/edit/hapus/unbind lisensi dilakukan
+dari sini.
 
 ## Setup
 
@@ -43,10 +44,6 @@ akan langsung bisa dipakai di aplikasi Android tanpa perlu ubah apa pun di app.
    - Jangan commit ke git
    - Jangan upload ke tempat publik
    - Jangan ikut ter-zip saat share project Android
-
-   > Kalau kamu masih punya `serviceAccountKey.json` dari
-   > `tools/license-generator-termux/` di project Android, itu bisa langsung
-   > dipakai — tinggal copy ke folder bot ini.
 
 2. Install dependency:
    ```bash
@@ -115,7 +112,7 @@ akan langsung bisa dipakai di aplikasi Android tanpa perlu ubah apa pun di app.
 Supaya ringan dan gampang jalan di Termux (`firebase-admin` kadang berat/gagal
 install di Termux karena native dependency). Bot ini bicara langsung ke
 **Firestore REST API** pakai JWT yang ditandatangani manual dengan modul `crypto`
-bawaan Node — persis pola yang dipakai `generate_licenses.py`, cuma versi JS.
+bawaan Node.
 
 ## Keamanan
 
