@@ -37,22 +37,31 @@ try {
   process.exit(1);
 }
 
-// ── Jaga-jaga: pastikan serviceAccountKey.json ini benar-benar milik
-// project Firebase yang SAMA dengan yang dipakai aplikasi Android
-// (app/google-services.json), bukan project lain / key dari akun lain.
+// ── WAJIB: pastikan serviceAccountKey.json ini benar-benar milik project
+// Firebase yang SAMA dengan yang dipakai aplikasi Android (app/google-services.json),
+// bukan project lain / key dari akun lain.
 //
-// Kalau ini beda project, bot akan tetap bisa generate lisensi TANPA error
-// sama sekali (REST call ke Firestore-nya sukses 200 OK) — cuma dokumennya
-// nyasar ke project yang salah, jadi app tidak akan pernah menemukan kode
-// itu. Ini persis gejala "bot bilang berhasil tapi kode 'tidak ditemukan'
-// di app" yang sebelumnya sulit dilacak karena tidak ada pesan error.
+// Kalau ini beda project, bot akan tetap bisa "generate lisensi" TANPA error
+// HTTP sama sekali (REST call ke Firestore-nya sukses 200 OK) — cuma dokumennya
+// nyasar ke project yang salah, jadi app tidak akan pernah menemukan kode itu.
+// Ini persis gejala "bot bilang berhasil tapi kode 'tidak ditemukan' di app"
+// yang sebelumnya sulit dilacak karena tidak ada pesan error sama sekali.
 //
-// Isi EXPECTED_PROJECT_ID di .env untuk mengaktifkan pengecekan ini (ambil
-// dari project_id di app/google-services.json project Android-mu). Kalau
-// tidak diisi, pengecekan dilewati (biar tidak memaksa breaking change buat
-// yang belum sempat set .env).
+// EXPECTED_PROJECT_ID WAJIB diisi di .env (ambil dari project_id di
+// app/google-services.json project Android-mu). Bot menolak start kalau ini
+// kosong atau tidak cocok — supaya kesalahan ini tidak bisa lolos diam-diam lagi.
 const EXPECTED_PROJECT_ID = process.env.EXPECTED_PROJECT_ID;
-if (EXPECTED_PROJECT_ID && firestore.projectId !== EXPECTED_PROJECT_ID) {
+if (!EXPECTED_PROJECT_ID) {
+  console.error(
+    `❌ EXPECTED_PROJECT_ID belum diisi di .env.\n` +
+      `   Bot ini akan menulis ke project "${firestore.projectId}" (dari serviceAccountKey.json),\n` +
+      `   tapi tidak ada cara memverifikasi ini project yang benar tanpa EXPECTED_PROJECT_ID.\n` +
+      `   Isi EXPECTED_PROJECT_ID di .env dengan project_id dari app/google-services.json\n` +
+      `   aplikasi Android-mu, lalu jalankan ulang bot ini.`
+  );
+  process.exit(1);
+}
+if (firestore.projectId !== EXPECTED_PROJECT_ID) {
   console.error(
     `❌ serviceAccountKey.json ini untuk project Firebase "${firestore.projectId}", ` +
       `tapi EXPECTED_PROJECT_ID di .env diisi "${EXPECTED_PROJECT_ID}".\n` +
@@ -62,14 +71,7 @@ if (EXPECTED_PROJECT_ID && firestore.projectId !== EXPECTED_PROJECT_ID) {
   );
   process.exit(1);
 }
-if (!EXPECTED_PROJECT_ID) {
-  console.warn(
-    `⚠️  EXPECTED_PROJECT_ID belum diisi di .env — pengecekan project Firestore dilewati.\n` +
-      `   Bot ini akan menulis ke project "${firestore.projectId}" (dari serviceAccountKey.json).\n` +
-      `   Pastikan ini SAMA PERSIS dengan project_id di app/google-services.json aplikasi Android-mu,\n` +
-      `   kalau tidak, lisensi yang dibuat bot tidak akan pernah terbaca di app.`
-  );
-}
+console.log(`✅ Project Firestore terverifikasi: "${firestore.projectId}" (sama dengan app Android).`);
 
 const bot = new TelegramBot(TOKEN, { polling: true });
 

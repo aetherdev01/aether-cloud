@@ -52,9 +52,21 @@ service cloud.firestore {
     }
 
     match /licenses/{key} {
-      // Dokumen lisensi HANYA dibuat admin secara manual (mis. lewat Firebase
-      // Console, yang tidak tunduk pada rules ini). Client tidak pernah boleh
-      // membuat kode lisensinya sendiri.
+      // CATATAN PENTING: rules ini SAMA SEKALI TIDAK BERLAKU untuk bot Telegram
+      // (bot.js). Bot menulis lewat Firestore REST API pakai serviceAccountKey.json
+      // (service account / Admin SDK credentials), yang PUNYA HAK AKSES PENUH dan
+      // BYPASS security rules ini sepenuhnya. Rules di bawah ini HANYA membatasi
+      // apa yang boleh dilakukan APLIKASI ANDROID (client biasa, tanpa credentials
+      // admin) langsung ke Firestore.
+      //
+      // Kalau bot Telegram "berhasil generate" tapi lisensinya tidak muncul di
+      // Firebase Console / tidak kebaca app, PENYEBABNYA BUKAN rules ini — cek
+      // apakah serviceAccountKey.json yang dipakai bot benar-benar untuk project
+      // Firebase yang sama dengan app/google-services.json (lihat EXPECTED_PROJECT_ID
+      // di bot.js/.env).
+
+      // Dokumen lisensi HANYA dibuat lewat bot Telegram (service account, bypass
+      // rules ini). Client Android tidak pernah boleh membuat kode lisensinya sendiri.
       allow create: if false;
 
       // Boleh dibaca untuk mengecek status (dipakai LicenseGateScreen saat
@@ -70,16 +82,20 @@ service cloud.firestore {
       // - status berubah dari "unused" ke "active" saja (tidak bisa langsung
       //   ke status lain, dan tidak bisa mengubah lisensi yang sudah revoked).
       // - activatedAt harus timestamp server asli (request.time).
-      // - expiresAt TIDAK BOLEH berubah sama sekali lewat client (hanya admin
-      //   lewat Console yang bisa memperpanjang/mempersingkat masa berlaku).
+      // - expiresAt TIDAK BOLEH berubah sama sekali lewat client (hanya bot
+      //   Telegram, lewat service account, yang bisa memperpanjang/mempersingkat
+      //   masa berlaku).
+      // - note (field opsional dari bot) tidak boleh diubah lewat client.
       allow update: if resource.data.deviceId == null
         && resource.data.status == "unused"
         && request.resource.data.deviceId is string
         && request.resource.data.deviceId.size() > 0
         && request.resource.data.status == "active"
         && request.resource.data.activatedAt == request.time
-        && request.resource.data.expiresAt == resource.data.expiresAt;
+        && request.resource.data.expiresAt == resource.data.expiresAt
+        && request.resource.data.createdAt == resource.data.createdAt;
 
+      // Hanya bot Telegram (service account) yang boleh menghapus lisensi.
       allow delete: if false;
     }
   }
