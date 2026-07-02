@@ -1,38 +1,72 @@
-# AetherX License Bot (Telegram)
+# AetherX License Bot (Telegram) — v2, Firestore
 
-Bot Telegram untuk kelola lisensi AetherX: generate, edit, hapus, cek device ID — terhubung langsung ke Redis Upstash yang sama dengan license platform (`promoted-seal-66351`).
+Bot Telegram untuk kelola lisensi AetherX: generate, edit, hapus, cek device ID —
+**langsung ke Firebase Firestore**, koleksi `licenses`, skema yang SAMA PERSIS
+dengan yang dibaca `LicenseRepository.kt` di aplikasi Android.
+
+> ⚠️ Ini pengganti versi bot sebelumnya yang salah pakai Redis Upstash — Redis
+> **tidak dibaca sama sekali** oleh aplikasi Android, makanya token dari versi lama
+> muncul "Kode tidak ditemukan". Versi ini menulis ke tempat yang benar.
 
 ## Format Token
 
-Token lisensi: **7 karakter acak**, campuran huruf besar, huruf kecil, dan angka.
+7 karakter acak, campuran huruf besar, huruf kecil, dan angka.
 Contoh: `aB3xK9m`, `Qz7vTp2`
+(Karakter ambigu `0/O/1/l/I` dibuang biar gampang dibaca/diketik ulang pembeli.)
 
-Karakter ambigu (`0/O`, `1/l/I`) sengaja dibuang biar gampang dibaca & diketik ulang oleh pembeli.
+## Skema Firestore (harus sama persis dengan app)
+
+Koleksi `licenses`, document ID = kode lisensi itu sendiri:
+
+```
+licenses/{token}
+  deviceId: string | null
+  status: "unused" | "active" | "revoked"
+  activatedAt: timestamp | null
+  expiresAt: timestamp
+  createdAt: timestamp
+  note: string (opsional, tambahan dari bot ini — tidak dipakai app)
+```
+
+Ini identik dengan skema yang dipakai `tools/license-generator-termux/generate_licenses.py`
+dan `LicenseRepository.kt`. Karena skemanya sama, kode yang dibuat lewat bot ini
+akan langsung bisa dipakai di aplikasi Android tanpa perlu ubah apa pun di app.
 
 ## Setup
 
-1. Install dependency:
+1. **Ambil Service Account Key** (kalau belum ada / mau pakai punya sendiri):
+   Firebase Console → project AetherX → ⚙️ Project Settings → Service accounts →
+   **Generate new private key** → simpan sebagai `serviceAccountKey.json` di
+   folder project ini (sejajar dengan `bot.js`).
+
+   ⚠️ **File ini kunci akses PENUH ke Firestore-mu (bypass semua Security Rules).**
+   - Jangan commit ke git
+   - Jangan upload ke tempat publik
+   - Jangan ikut ter-zip saat share project Android
+
+   > Kalau kamu masih punya `serviceAccountKey.json` dari
+   > `tools/license-generator-termux/` di project Android, itu bisa langsung
+   > dipakai — tinggal copy ke folder bot ini.
+
+2. Install dependency:
    ```bash
    npm install
    ```
 
-2. Salin `.env.example` jadi `.env`, lalu isi:
+3. Salin `.env.example` jadi `.env`, lalu isi:
    ```env
    TELEGRAM_BOT_TOKEN=8699927303:AAEiiP_JLYwyiEMaXlQNzowB_07w0MDlUks
    ADMIN_TELEGRAM_ID=123456789
-   UPSTASH_REDIS_REST_URL=https://promoted-seal-66351.upstash.io
-   UPSTASH_REDIS_REST_TOKEN=isi_token_upstash_kamu
+   SERVICE_ACCOUNT_PATH=./serviceAccountKey.json
    ```
+   `ADMIN_TELEGRAM_ID`: chat `/start` ke **@userinfobot** buat dapetin ID kamu.
 
-   - `ADMIN_TELEGRAM_ID`: Telegram user ID kamu (angka). Cara dapat: chat `/start` ke **@userinfobot**.
-   - `UPSTASH_REDIS_REST_TOKEN`: ambil dari dashboard Upstash Redis kamu (yang sama dipakai license platform Vercel). **Jangan** commit token ini ke git.
-
-3. Jalankan bot:
+4. Jalankan:
    ```bash
    npm start
    ```
 
-   Bot pakai **polling** (bukan webhook), jadi tinggal jalan di Termux, VPS, atau PC — asal proses tetap hidup. Untuk keep-alive di VPS bisa pakai `pm2`:
+   Untuk keep-alive 24 jam pakai `pm2`:
    ```bash
    npm install -g pm2
    pm2 start bot.js --name aetherx-license-bot
@@ -41,43 +75,41 @@ Karakter ambigu (`0/O`, `1/l/I`) sengaja dibuang biar gampang dibaca & diketik u
 
 ## Perintah Bot
 
-Semua perintah bisa dipakai lewat command langsung (`/generate ...`) atau lewat tombol menu `/start`.
-
 | Perintah | Akses | Keterangan |
 |---|---|---|
 | `/start` | semua | Tampilkan menu utama |
 | `/help` | semua | Daftar perintah |
-| `/generate [plan] [maxDevices] [hariBerlaku]` | admin | Buat lisensi baru. Contoh: `/generate lifetime 1 0` atau `/generate monthly 2 30` |
+| `/generate <hari> [catatan]` | admin | Buat lisensi baru, status awal `unused`. Contoh: `/generate 30 Promo Juli` |
 | `/check <token>` | semua | Lihat detail lisensi |
-| `/edit <token>` | admin | Edit status, plan, maxDevices, expiry, device ID, atau catatan (flow interaktif via tombol) |
+| `/edit <token>` | admin | Edit status, expiry, device ID (paksa aktivasi manual), atau catatan |
 | `/delete <token>` | admin | Hapus lisensi permanen (minta konfirmasi) |
-| `/device <deviceId>` | semua | Cari lisensi yang terpasang di device ID tsb |
-| `/unbind <token>` | admin | Lepas device dari lisensi, supaya bisa dipakai di device lain |
-| `/list` | admin | Daftar semua token lisensi (maks 50 ditampilkan) |
-| `/stats` | admin | Jumlah total lisensi tersimpan |
+| `/device <deviceId>` | semua | Cari lisensi yang terkunci ke device ID tsb |
+| `/unbind <token>` | admin | Lepas device dari lisensi → status kembali `unused`, bisa dipakai device lain |
+| `/list` | admin | Daftar semua token lisensi |
 | `/cancel` | semua | Batalkan proses multi-langkah yang sedang berjalan |
 
-## Struktur Data di Redis
+## Alur normal pemakaian
 
-Setiap lisensi disimpan sebagai **Hash** di key `license:<token>`:
+1. Admin `/generate 30` di bot → dapat token 7 karakter, status `unused`, `deviceId: null`.
+2. Token dikasih ke pembeli.
+3. Pembeli masukkan token di aplikasi Android → `LicenseRepository.activate()` mengunci
+   `deviceId` ke device tsb dan ubah status jadi `active` — **ini terjadi otomatis dari
+   sisi app**, bot tidak perlu ikut campur di langkah ini.
+4. Kalau pembeli ganti HP dan perlu pindah lisensi: admin `/unbind <token>` di bot →
+   `deviceId` dikosongkan, status balik `unused` → bisa diaktivasi ulang di device baru.
 
-```
-{
-  token, status (active|suspended|revoked),
-  deviceId, maxDevices, plan, note,
-  createdAt, expiresAt, activatedAt
-}
-```
+## Kenapa tidak pakai `firebase-admin`?
 
-Index tambahan:
-- `license:all` — Set berisi semua token yang pernah dibuat (dipakai untuk `/list`, `/stats`)
-- `license:by-device:<deviceId>` — Set token yang terkait device tsb (dipakai untuk `/device`)
-
-Skema ini **kompatibel** untuk dibaca langsung dari backend Next.js license platform kamu — tinggal pakai `hgetall("license:<token>")` di endpoint checkout/validasi.
+Supaya ringan dan gampang jalan di Termux (`firebase-admin` kadang berat/gagal
+install di Termux karena native dependency). Bot ini bicara langsung ke
+**Firestore REST API** pakai JWT yang ditandatangani manual dengan modul `crypto`
+bawaan Node — persis pola yang dipakai `generate_licenses.py`, cuma versi JS.
 
 ## Keamanan
 
-- Hanya `ADMIN_TELEGRAM_ID` yang bisa generate/edit/hapus/unbind lisensi.
-- User biasa tetap bisa `/check` dan `/device` untuk keperluan support (lihat status lisensi sendiri) — kalau mau ini juga dikunci ke admin saja, tinggal tambahkan `requireAdmin(msg)` di handler `/check` dan `/device`.
-- **Jangan** commit file `.env` ke git atau sertakan di zip yang dibagikan.
-- Token bot Telegram yang kamu berikan sudah tertanam sebagai contoh di `.env.example` — sebaiknya tetap pindahkan ke `.env` asli dan jangan publikasikan repo ini secara publik apa adanya.
+- Hanya `ADMIN_TELEGRAM_ID` yang bisa generate/edit/hapus/unbind.
+- `serviceAccountKey.json` dan `.env` sudah masuk `.gitignore` — jangan pernah
+  di-share ke luar.
+- Kalau `serviceAccountKey.json` pernah tidak sengaja ter-upload/ter-share ke
+  tempat lain, **segera generate key baru** dari Firebase Console dan hapus
+  yang lama (Project Settings → Service accounts → kelola key lama).
