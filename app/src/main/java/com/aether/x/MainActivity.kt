@@ -26,7 +26,6 @@ import com.aether.x.data.DarkModePref
 import com.aether.x.ui.main.MainScreen
 import com.aether.x.ui.navigation.AetherXRoutes
 import com.aether.x.ui.onboarding.GuideScreen
-import com.aether.x.ui.onboarding.LicenseGateScreen
 import com.aether.x.ui.onboarding.PermissionSetupScreen
 import com.aether.x.ui.onboarding.SplashScreen
 import com.aether.x.ui.theme.AetherXTheme
@@ -80,10 +79,10 @@ private fun AetherXRoot(
 ) {
     val navController = rememberNavController()
     val scope = rememberCoroutineScope()
-    // Onboarding selesai → app tetap wajib lewat LICENSE_GATE dulu setiap kali
-    // dibuka (bukan cuma sekali), supaya status lisensi (expired/revoked) yang
-    // berubah di server ikut tertangkap tanpa perlu uninstall/reinstall.
-    val startDestination = if (onboardingCompleted) AetherXRoutes.LICENSE_GATE else AetherXRoutes.SETUP_ONBOARDING
+    // Lisensi TIDAK LAGI jadi gerbang wajib di sini — statusnya dicek dan
+    // diaktivasi dari tab Settings (lihat MembershipSection), semua fitur
+    // tetap terbuka sebelum/tanpa lisensi aktif.
+    val startDestination = if (onboardingCompleted) AetherXRoutes.MAIN else AetherXRoutes.SETUP_ONBOARDING
 
     // Setelah onboarding selesai, app tidak lagi lewat SplashScreen (yang
     // sebelumnya satu-satunya tempat status Shizuku/root dicek ulang secara
@@ -112,17 +111,8 @@ private fun AetherXRoot(
             GuideScreen(
                 onFinish = {
                     scope.launch { preferences.setOnboardingCompleted(true) }
-                    navController.navigate(AetherXRoutes.LICENSE_GATE) {
-                        popUpTo(AetherXRoutes.SETUP_ONBOARDING) { inclusive = true }
-                    }
-                },
-            )
-        }
-        composable(AetherXRoutes.LICENSE_GATE) {
-            LicenseGateScreen(
-                onLicenseValid = {
                     navController.navigate(AetherXRoutes.MAIN) {
-                        popUpTo(AetherXRoutes.LICENSE_GATE) { inclusive = true }
+                        popUpTo(AetherXRoutes.SETUP_ONBOARDING) { inclusive = true }
                     }
                 },
             )

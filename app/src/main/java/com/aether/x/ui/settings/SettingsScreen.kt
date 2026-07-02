@@ -65,6 +65,11 @@ fun SettingsScreen(
 ) {
     val prefs by viewModel.state.collectAsStateWithLifecycle()
     val privilegeStatus by PrivilegeManager.status.collectAsStateWithLifecycle()
+    val membershipStatus by viewModel.membershipStatus.collectAsStateWithLifecycle()
+    val membershipExpiresAtMillis by viewModel.membershipExpiresAtMillis.collectAsStateWithLifecycle()
+    val membershipKeyInput by viewModel.membershipKeyInput.collectAsStateWithLifecycle()
+    val membershipError by viewModel.membershipError.collectAsStateWithLifecycle()
+    val membershipSubmitting by viewModel.membershipSubmitting.collectAsStateWithLifecycle()
     var dragModeActive by remember { mutableStateOf(false) }
     var overlayGranted by remember { mutableStateOf(viewModel.canDrawOverlays()) }
 
@@ -92,6 +97,18 @@ fun SettingsScreen(
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onBackground,
         )
+
+        SectionCard(title = "Membership") {
+            MembershipSection(
+                status = membershipStatus,
+                expiresAtMillis = membershipExpiresAtMillis,
+                keyInput = membershipKeyInput,
+                onKeyInputChange = viewModel::setMembershipKeyInput,
+                errorMessage = membershipError,
+                isSubmitting = membershipSubmitting,
+                onActivate = viewModel::activateMembership,
+            )
+        }
 
         SectionCard(title = stringResource(R.string.settings_section_appearance)) {
             Column {

@@ -9,8 +9,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 /**
- * Hasil pemeriksaan/aktivasi lisensi. UI (lihat LicenseGateScreen) memetakan
- * tiap varian ini ke pesan dan aksi yang sesuai.
+ * Hasil pemeriksaan/aktivasi lisensi. UI (lihat MembershipSection di tab
+ * Settings) memetakan tiap varian ini ke pesan dan aksi yang sesuai.
  */
 sealed interface LicenseResult {
     /** Lisensi valid untuk device ini, dengan `expiresAtMillis` kapan dia kadaluarsa. */
