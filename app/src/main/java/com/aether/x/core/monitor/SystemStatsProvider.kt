@@ -9,19 +9,6 @@ import java.io.RandomAccessFile
 import kotlin.math.roundToInt
 
 /**
- * Snapshot ringan dari kondisi sistem saat ini, dipakai oleh overlay Monitor FPS.
- * Semua sumber di sini adalah file /proc & /sys yang bisa dibaca tanpa root di
- * kebanyakan perangkat Android (walau beberapa vendor membatasinya — makanya
- * setiap pembacaan dibungkus try/catch dan boleh menghasilkan null / "-").
- */
-data class SystemStatsSnapshot(
-    val fps: Int,
-    val cpuLoadPercent: Int?,
-    val gpuLoadPercent: Int?,
-    val temperatureCelsius: Float?,
-)
-
-/**
  * Membaca statistik CPU load, suhu, dan GPU load dari /proc, /sys, dan API resmi.
  * FPS dibaca terpisah oleh [com.aether.x.core.monitor.GfxInfoFpsReader] lewat
  * `dumpsys gfxinfo`, bukan di sini.

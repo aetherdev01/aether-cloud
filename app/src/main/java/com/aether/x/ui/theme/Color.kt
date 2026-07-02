@@ -23,6 +23,16 @@ val OnAccentBlue = Color(0xFF0A0F1F)
 // Aksen merah (disconnected/error)
 val AccentRed = Color(0xFFFF6B5E)
 
+// Aksen hijau (membership aktif) — dipisah jadi token resmi di palet supaya
+// warna badge/status "Aktif" konsisten dan tidak lagi ditulis sebagai warna
+// mentah (raw Color(...)) langsung di dalam composable seperti sebelumnya.
+val AccentGreen = Color(0xFF6EE7A8)
+val AccentGreenContainer = Color(0xFF1E3A2A)
+
+// Aksen kuning (membership akan berakhir / peringatan ringan)
+val AccentAmber = Color(0xFFF6C560)
+val AccentAmberContainer = Color(0xFF3A311A)
+
 // Teks
 val TextPrimary = Color(0xFFF2F3F7)       // putih pudar untuk judul besar
 val TextSecondary = Color(0xFFB9BAC6)     // abu terang untuk body text

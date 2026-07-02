@@ -10,6 +10,7 @@ import com.aether.x.core.display.DisplayInfo
 import com.aether.x.core.display.DisplayInfoProvider
 import com.aether.x.core.permission.PrivilegeManager
 import com.aether.x.core.shell.ShellExecutor
+import com.aether.x.core.shell.ShellResult
 import com.aether.x.data.AetherXPreferences
 import com.aether.x.data.DeviceRegistry
 import com.aether.x.data.TweakRepository
@@ -203,14 +204,20 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Menjalankan satu perintah tweak lewat executor aktif lalu langsung menyimpan
      *  state tweak saat ini ke preferences. Kalau belum ada akses (Shizuku/Root),
-     *  perubahan tetap tersimpan di UI/preferences tapi menampilkan toast peringatan. */
-    private fun applyAndPersist(action: suspend (ShellExecutor) -> Unit) {
+     *  perubahan tetap tersimpan di UI/preferences tapi menampilkan toast peringatan.
+     *  Kalau perintah shell-nya sendiri gagal (mis. `cmd notification set_dnd` ditolak
+     *  perangkat), itu juga ditampilkan sebagai toast alih-alih diam-diam diabaikan —
+     *  sebelumnya hasil [ShellResult] tidak pernah dicek sama sekali di sini. */
+    private fun applyAndPersist(action: suspend (ShellExecutor) -> ShellResult) {
         viewModelScope.launch {
             val executor = PrivilegeManager.getExecutor()
             if (executor == null) {
                 _state.update { it.copy(message = appString(R.string.tweak_no_access_toast)) }
             } else {
-                action(executor)
+                val result = action(executor)
+                if (!result.success) {
+                    _state.update { it.copy(message = appString(R.string.tweak_command_failed_toast)) }
+                }
             }
             val s = _state.value
             preferences.saveTweakState(

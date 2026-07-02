@@ -9,7 +9,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 /**
- * Hasil pemeriksaan/aktivasi lisensi. UI (lihat MembershipSection di tab
+ * Hasil pemeriksaan/aktivasi lisensi. UI (lihat MembershipViewModel/MembershipScreen di tab
  * Settings) memetakan tiap varian ini ke pesan dan aksi yang sesuai.
  */
 sealed interface LicenseResult {

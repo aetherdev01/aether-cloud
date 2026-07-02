@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">AetherX</string>
-    <string name="app_tagline">Pelicin Layar untuk Free Fire</string>
 
     <!-- Splash — auto permission request -->
     <string name="splash_status_checking">Memeriksa perangkat…</string>
@@ -58,7 +57,38 @@
 
     <!-- Bottom navigation -->
     <string name="nav_tweak">Tweak</string>
+    <string name="nav_membership">Membership</string>
     <string name="nav_settings">Pengaturan</string>
+
+    <!-- Membership screen -->
+    <string name="membership_headline">Membership</string>
+    <string name="membership_subtitle">Kelola status dan aktivasi kode lisensi perangkat ini.</string>
+    <string name="membership_activate_button">Aktivasi Membership</string>
+    <string name="membership_key_error_empty">Masukkan kode lisensi terlebih dulu.</string>
+    <string name="membership_key_error_expired">Kode ini sudah kedaluwarsa.</string>
+    <string name="membership_key_error_revoked">Kode ini sudah dicabut oleh admin.</string>
+    <string name="membership_key_error_bound">Kode ini sudah dipakai di perangkat lain.</string>
+    <string name="membership_key_error_not_found">Kode tidak ditemukan. Periksa lagi penulisannya.</string>
+    <string name="membership_key_error_network">Gagal terhubung ke server. Coba lagi.</string>
+    <string name="membership_status_checking">Memeriksa status…</string>
+    <string name="membership_status_checking_desc">Menyambungkan ke server…</string>
+    <string name="membership_status_active">Membership Aktif</string>
+    <string name="membership_status_active_desc">Berlaku sampai %1$s</string>
+    <string name="membership_status_active_desc_no_date">Berlaku aktif</string>
+    <string name="membership_status_inactive">Belum Ada Membership</string>
+    <string name="membership_status_inactive_desc">Masukkan kode untuk mengaktifkan membership di perangkat ini.</string>
+    <string name="membership_status_expired">Membership Berakhir</string>
+    <string name="membership_status_expired_desc">Berakhir pada %1$s — masukkan kode baru.</string>
+    <string name="membership_status_expired_desc_no_date">Masukkan kode baru untuk mengaktifkan kembali.</string>
+    <string name="membership_badge_active">Aktif</string>
+    <string name="membership_badge_inactive">Belum Aktif</string>
+    <string name="membership_badge_expired">Kedaluwarsa</string>
+    <string name="membership_key_placeholder">Kode lisensi (bebas huruf/angka)</string>
+    <string name="membership_key_label">Kode Lisensi</string>
+    <string name="membership_benefits_title">Keuntungan Membership</string>
+    <string name="membership_benefit_1">Akses penuh ke semua tweak kernel-level (Root)</string>
+    <string name="membership_benefit_2">Update fitur lebih awal dibanding versi gratis</string>
+    <string name="membership_benefit_3">Dukungan prioritas lewat Telegram</string>
 
     <!-- Tweak screen -->
     <string name="tweak_user_id_format">ID-%1$d</string>
@@ -88,10 +118,9 @@
     <string name="tweak_reset">Reset ke Default Pabrik</string>
     <string name="tweak_reset_toast">Parameter kernel &amp; sistem dikembalikan ke default</string>
     <string name="tweak_no_access_toast">Aktifkan Shizuku atau Root dulu di menu Pengaturan</string>
+    <string name="tweak_command_failed_toast">Perintah gagal dijalankan di perangkat ini — coba lagi atau periksa akses Shizuku/Root</string>
 
-    <!-- Tweak screen — game launcher (floating button) -->
-    <string name="tweak_fab_open_game">Buka %1$s</string>
-    <string name="tweak_game_none_installed">Free Fire atau Free Fire MAX tidak terdeteksi di perangkat ini.</string>
+    <!-- Tweak screen — game launcher -->
     <string name="tweak_game_launch_failed">Gagal membuka game — coba buka manual lewat launcher.</string>
 
 
@@ -106,7 +135,6 @@
     <!-- Settings — Monitor FPS -->
     <string name="settings_section_fps_monitor">Monitor FPS ( Beta )</string>
     <string name="fps_monitor_enable">Tampilkan Monitor FPS</string>
-    <string name="fps_monitor_enable_desc">Overlay kecil yang menampilkan FPS, CPU, GPU, dan suhu perangkat secara real-time.</string>
     <string name="fps_monitor_locked_desc">Fitur ini sementara dikunci dan belum bisa digunakan. Segera hadir.</string>
     <string name="fps_monitor_permission_needed">Butuh izin "Tampil di atas aplikasi lain". Ketuk saklar di atas untuk membuka pengaturan izin.</string>
     <string name="fps_monitor_style_label">Gaya Tampilan</string>
@@ -124,7 +152,6 @@
     <string name="settings_section_about">Tentang</string>
     <string name="settings_maintainer_name">Aldi Ahmad Khoirudin</string>
     <string name="settings_maintainer_handle">@AetherDev22</string>
-    <string name="settings_maintainer_initial">A</string>
     <string name="settings_about">AetherX</string>
     <string name="settings_about_tagline">Tweak performa &amp; overlay untuk gaming</string>
     <string name="settings_version">v%1$s</string>
@@ -168,8 +195,4 @@
     <string name="crosshair_notification_channel">Overlay Crosshair</string>
     <string name="crosshair_notification_title">Crosshair AetherX aktif</string>
     <string name="crosshair_notification_text">Ketuk untuk membuka pengaturan crosshair</string>
-
-    <!-- Generic -->
-    <string name="cd_back">Kembali</string>
-    <string name="cd_app_logo">Logo AetherX</string>
 </resources>

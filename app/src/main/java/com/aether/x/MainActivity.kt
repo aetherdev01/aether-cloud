@@ -80,7 +80,8 @@ private fun AetherXRoot(
     val navController = rememberNavController()
     val scope = rememberCoroutineScope()
     // Lisensi TIDAK LAGI jadi gerbang wajib di sini — statusnya dicek dan
-    // diaktivasi dari tab Settings (lihat MembershipSection), semua fitur
+    // diaktivasi dari tab Membership tersendiri (lihat MembershipViewModel),
+    // semua fitur
     // tetap terbuka sebelum/tanpa lisensi aktif.
     val startDestination = if (onboardingCompleted) AetherXRoutes.MAIN else AetherXRoutes.SETUP_ONBOARDING
 

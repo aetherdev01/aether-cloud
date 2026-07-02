@@ -3,6 +3,7 @@ package com.aether.x.ui.main
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material.icons.outlined.WorkspacePremium
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -20,11 +21,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aether.x.R
+import com.aether.x.ui.membership.MembershipScreen
 import com.aether.x.ui.settings.SettingsScreen
 import com.aether.x.ui.tweak.TweakScreen
 import com.aether.x.ui.tweak.TweakViewModel
 
-private enum class MainTab { TWEAK, SETTINGS }
+private enum class MainTab { TWEAK, MEMBERSHIP, SETTINGS }
 
 @Composable
 fun MainScreen(
@@ -51,6 +53,13 @@ fun MainScreen(
                     colors = aetherNavColors(),
                 )
                 NavigationBarItem(
+                    selected = selectedTab == MainTab.MEMBERSHIP,
+                    onClick = { selectedTab = MainTab.MEMBERSHIP },
+                    icon = { Icon(Icons.Outlined.WorkspacePremium, contentDescription = null) },
+                    label = { Text(stringResource(R.string.nav_membership)) },
+                    colors = aetherNavColors(),
+                )
+                NavigationBarItem(
                     selected = selectedTab == MainTab.SETTINGS,
                     onClick = { selectedTab = MainTab.SETTINGS },
                     icon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
@@ -65,6 +74,10 @@ fun MainScreen(
                 modifier = Modifier,
                 contentPadding = padding,
                 viewModel = tweakViewModel,
+            )
+            MainTab.MEMBERSHIP -> MembershipScreen(
+                modifier = Modifier,
+                contentPadding = padding,
             )
             MainTab.SETTINGS -> SettingsScreen(
                 modifier = Modifier,

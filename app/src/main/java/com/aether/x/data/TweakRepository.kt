@@ -45,14 +45,32 @@ class TweakRepository {
     }
 
     /**
-     * Mode Game: mengaktifkan Do Not Disturb (zen mode) sistem lewat `settings put global
-     * zen_mode`, supaya notifikasi tidak mengganggu saat bermain. zen_mode 1 = DND penuh
-     * (Total Silence-setara di sebagian ROM), 0 = kembali normal. Sama seperti perintah
-     * `adb shell settings put global zen_mode 1`, hanya dijalankan lewat Shizuku/root.
+     * Mode Game: mengaktifkan Do Not Disturb sistem supaya notifikasi tidak mengganggu
+     * saat bermain.
+     *
+     * CATATAN PERBAIKAN BUG: sebelumnya ini hanya menulis `settings put global zen_mode`
+     * secara langsung. Di Android modern (12+/One UI), menulis key itu saja TIDAK
+     * benar-benar mengaktifkan DND — sistem notifikasi (NotificationManager) memvalidasi
+     * ulang lewat rute "notification policy" resmi, jadi togglenya sering terlihat tidak
+     * berefek sama sekali (bahkan saat perintah shell-nya "sukses"). Perintah resmi yang
+     * benar-benar dipakai oleh System UI sendiri untuk toggle DND adalah `cmd notification
+     * set_dnd`, yang menjamin konsistensi dengan status yang dibaca ulang lewat
+     * `settings get global zen_mode`.
+     *
+     * `cmd notification set_dnd priority` = DND (Prioritas), setara "Jangan Ganggu" biasa.
+     * `cmd notification set_dnd off` = kembali normal.
+     * Sama seperti `adb shell cmd notification set_dnd priority`, hanya dijalankan lewat
+     * Shizuku/root. Sebagai fallback (perangkat yang tidak mengenali subcommand ini),
+     * kita tetap sertakan `settings put global zen_mode` sebagai upaya kedua.
      */
     suspend fun applyGameMode(executor: ShellExecutor, enabled: Boolean): ShellResult {
-        val value = if (enabled) 1 else 0
-        return executor.exec("settings put global zen_mode $value")
+        val mode = if (enabled) "priority" else "off"
+        val zenValue = if (enabled) 2 else 0
+        val primary = executor.exec("cmd notification set_dnd $mode")
+        if (primary.success) return primary
+
+        // Fallback untuk ROM/perangkat yang belum mengenali `cmd notification set_dnd`.
+        return executor.exec("settings put global zen_mode $zenValue")
     }
 
     /**

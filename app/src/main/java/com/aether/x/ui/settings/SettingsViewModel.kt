@@ -13,127 +13,21 @@ import com.aether.x.data.AppPreferences
 import com.aether.x.data.CrosshairStyle
 import com.aether.x.data.DarkModePref
 import com.aether.x.data.FpsMonitorStyle
-import com.aether.x.data.LicenseRepository
-import com.aether.x.data.LicenseResult
 import com.aether.x.data.TemperatureUnit
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
 
     private val preferences = AetherXPreferences(application)
-    private val licenseRepository = LicenseRepository(application)
 
     val state: StateFlow<AppPreferences> = preferences.preferences.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = AppPreferences(),
     )
-
-    private val _membershipStatus = MutableStateFlow(MembershipUiStatus.CHECKING)
-    val membershipStatus: StateFlow<MembershipUiStatus> = _membershipStatus.asStateFlow()
-
-    private val _membershipExpiresAtMillis = MutableStateFlow<Long?>(null)
-    val membershipExpiresAtMillis: StateFlow<Long?> = _membershipExpiresAtMillis.asStateFlow()
-
-    private val _membershipKeyInput = MutableStateFlow("")
-    val membershipKeyInput: StateFlow<String> = _membershipKeyInput.asStateFlow()
-
-    private val _membershipError = MutableStateFlow<String?>(null)
-    val membershipError: StateFlow<String?> = _membershipError.asStateFlow()
-
-    private val _membershipSubmitting = MutableStateFlow(false)
-    val membershipSubmitting: StateFlow<Boolean> = _membershipSubmitting.asStateFlow()
-
-    init {
-        // Cek status membership sekali saat Settings pertama kali dibuka
-        // (bukan blocking apa pun — cuma mengisi kartu ini). Kalau tidak ada
-        // cache lokal sama sekali, langsung dianggap INACTIVE tanpa perlu
-        // ke jaringan.
-        viewModelScope.launch {
-            val cached = preferences.preferences.first()
-            val cachedKey = cached.licenseKey
-            if (cachedKey.isNullOrBlank()) {
-                _membershipStatus.value = MembershipUiStatus.INACTIVE
-                return@launch
-            }
-
-            when (val result = licenseRepository.revalidate(cachedKey)) {
-                is LicenseResult.Valid -> {
-                    preferences.setLicenseCache(cachedKey, result.expiresAtMillis)
-                    _membershipStatus.value = MembershipUiStatus.ACTIVE
-                    _membershipExpiresAtMillis.value = result.expiresAtMillis
-                }
-                is LicenseResult.Expired -> {
-                    preferences.clearLicenseCache()
-                    _membershipStatus.value = MembershipUiStatus.EXPIRED
-                    _membershipExpiresAtMillis.value = result.expiredAtMillis
-                }
-                LicenseResult.Revoked, LicenseResult.BoundToOtherDevice, LicenseResult.NotFound -> {
-                    preferences.clearLicenseCache()
-                    _membershipStatus.value = MembershipUiStatus.INACTIVE
-                }
-                LicenseResult.NetworkError -> {
-                    // Offline: percaya cache lokal terakhir apa adanya (kalau
-                    // sempat tersimpan sebagai Valid sebelumnya) daripada
-                    // memaksa tampil INACTIVE hanya karena tidak ada koneksi.
-                    val cachedExpiry = cached.licenseExpiresAtMillis
-                    _membershipStatus.value = if (cachedExpiry != null && cachedExpiry > System.currentTimeMillis()) {
-                        MembershipUiStatus.ACTIVE
-                    } else {
-                        MembershipUiStatus.INACTIVE
-                    }
-                    _membershipExpiresAtMillis.value = cachedExpiry
-                }
-            }
-        }
-    }
-
-    fun setMembershipKeyInput(value: String) {
-        _membershipKeyInput.value = value
-        _membershipError.value = null
-    }
-
-    fun activateMembership() {
-        val key = _membershipKeyInput.value.trim()
-        if (key.isEmpty()) {
-            _membershipError.value = "Masukkan kode lisensi terlebih dulu."
-            return
-        }
-        _membershipError.value = null
-        _membershipSubmitting.value = true
-        viewModelScope.launch {
-            when (val result = licenseRepository.activate(key)) {
-                is LicenseResult.Valid -> {
-                    preferences.setLicenseCache(key, result.expiresAtMillis)
-                    _membershipStatus.value = MembershipUiStatus.ACTIVE
-                    _membershipExpiresAtMillis.value = result.expiresAtMillis
-                    _membershipKeyInput.value = ""
-                }
-                is LicenseResult.Expired -> {
-                    _membershipError.value = "Kode ini sudah kedaluwarsa."
-                }
-                LicenseResult.Revoked -> {
-                    _membershipError.value = "Kode ini sudah dicabut oleh admin."
-                }
-                LicenseResult.BoundToOtherDevice -> {
-                    _membershipError.value = "Kode ini sudah dipakai di perangkat lain."
-                }
-                LicenseResult.NotFound -> {
-                    _membershipError.value = "Kode tidak ditemukan. Periksa lagi penulisannya."
-                }
-                LicenseResult.NetworkError -> {
-                    _membershipError.value = "Gagal terhubung ke server. Coba lagi."
-                }
-            }
-            _membershipSubmitting.value = false
-        }
-    }
 
     fun setDarkModePref(pref: DarkModePref) {
         viewModelScope.launch { preferences.setDarkModePref(pref) }
