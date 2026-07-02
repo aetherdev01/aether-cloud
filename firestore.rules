@@ -39,5 +39,37 @@ service cloud.firestore {
 
       allow delete: if false;
     }
+
+    match /licenses/{key} {
+      // Dokumen lisensi HANYA dibuat admin secara manual (mis. lewat Firebase
+      // Console, yang tidak tunduk pada rules ini). Client tidak pernah boleh
+      // membuat kode lisensinya sendiri.
+      allow create: if false;
+
+      // Boleh dibaca untuk mengecek status (dipakai LicenseGateScreen saat
+      // revalidasi dari cache lokal).
+      allow get: if true;
+
+      // Update HANYA diterima sebagai aktivasi kode yang belum terpakai:
+      // - deviceId sebelumnya harus null (belum pernah diaktivasi siapa pun)
+      // - deviceId baru harus diisi (string non-kosong) — devicenya sendiri
+      //   tidak bisa diverifikasi dari sisi rules (client bisa kirim device ID
+      //   apa saja), makanya field lain yang sensitif (expiresAt, status lama)
+      //   dikunci ketat supaya kerusakan akibat penyalahgunaan ini terbatas.
+      // - status berubah dari "unused" ke "active" saja (tidak bisa langsung
+      //   ke status lain, dan tidak bisa mengubah lisensi yang sudah revoked).
+      // - activatedAt harus timestamp server asli (request.time).
+      // - expiresAt TIDAK BOLEH berubah sama sekali lewat client (hanya admin
+      //   lewat Console yang bisa memperpanjang/mempersingkat masa berlaku).
+      allow update: if resource.data.deviceId == null
+        && resource.data.status == "unused"
+        && request.resource.data.deviceId is string
+        && request.resource.data.deviceId.size() > 0
+        && request.resource.data.status == "active"
+        && request.resource.data.activatedAt == request.time
+        && request.resource.data.expiresAt == resource.data.expiresAt;
+
+      allow delete: if false;
+    }
   }
 }

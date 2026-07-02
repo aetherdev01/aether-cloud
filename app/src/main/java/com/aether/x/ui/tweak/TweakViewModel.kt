@@ -79,15 +79,23 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
 
         // ID lokal pengguna (mis. "ID-67128") ditampilkan di header tab Tweak,
         // menggantikan pill status Shizuku/Root sebelumnya. Angkanya sekarang
-        // dialokasikan dari counter Firestore supaya benar-benar berurutan.
+        // dialokasikan dari counter Firestore supaya benar-benar berurutan —
+        // TIDAK ADA fallback acak; kalau alokasi gagal total (lihat
+        // UserIdRepository), `id` adalah null dan pill ID pengguna di header
+        // otomatis tidak ditampilkan (lihat TweakHeader) sampai berhasil di
+        // percobaan berikutnya.
         //
         // Sekalian mendata perangkat ini ke koleksi `devices` di Firestore
         // (deviceId = ANDROID_ID, firstLoginAt, lastLoginAt) — best-effort,
-        // tidak memblokir UI kalau gagal/offline.
+        // tidak memblokir UI kalau gagal/offline. Hanya dipanggil kalau `id`
+        // berhasil didapat, karena Firestore rules mewajibkan field `userId`
+        // ada di setiap dokumen device.
         viewModelScope.launch {
             val id = userIdRepository.resolveUserId()
             _state.update { it.copy(userId = id) }
-            deviceRegistry.recordDeviceLogin(userId = id)
+            if (id != null) {
+                deviceRegistry.recordDeviceLogin(userId = id)
+            }
         }
     }
 

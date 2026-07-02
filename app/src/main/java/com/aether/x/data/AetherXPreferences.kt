@@ -11,7 +11,6 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlin.random.Random
 
 private val Context.dataStore by preferencesDataStore(name = "aetherx_prefs")
 
@@ -51,6 +50,10 @@ data class AppPreferences(
     // terkunci di pojok kiri bawah layar, tidak memakai offset ini.
     val fpsMonitorOffsetX: Int = 0,
     val fpsMonitorOffsetY: Int = 0,
+    val licenseKey: String? = null,
+    // Epoch millis kapan lisensi ini kadaluarsa, hasil cache dari validasi
+    // Firestore terakhir yang berhasil. null = belum pernah tervalidasi.
+    val licenseExpiresAtMillis: Long? = null,
 )
 
 /**
@@ -102,6 +105,14 @@ class AetherXPreferences(private val context: Context) {
         // counter Firestore (lihat UserIdRepository) — bukan sekadar angka acak
         // fallback lokal yang dibuat saat offline.
         val USER_ID_SYNCED = booleanPreferencesKey("user_id_synced")
+
+        // Cache lokal hasil validasi lisensi Firestore terakhir (lihat
+        // LicenseRepository). Dipakai supaya app tidak wajib online setiap
+        // kali dibuka — selama cache ini masih menunjukkan lisensi valid DAN
+        // belum lewat waktunya, app boleh langsung lanjut ke MainScreen tanpa
+        // menunggu round-trip ke Firestore.
+        val LICENSE_KEY = stringPreferencesKey("license_key")
+        val LICENSE_EXPIRES_AT_MILLIS = longPreferencesKey("license_expires_at_millis")
     }
 
     val preferences: Flow<AppPreferences> = context.dataStore.data.map { prefs ->
@@ -138,6 +149,8 @@ class AetherXPreferences(private val context: Context) {
                 ?: FpsMonitorStyle.CLASSIC,
             fpsMonitorOffsetX = prefs[Keys.FPS_MONITOR_OFFSET_X] ?: 0,
             fpsMonitorOffsetY = prefs[Keys.FPS_MONITOR_OFFSET_Y] ?: 0,
+            licenseKey = prefs[Keys.LICENSE_KEY],
+            licenseExpiresAtMillis = prefs[Keys.LICENSE_EXPIRES_AT_MILLIS],
         )
     }
 
@@ -236,22 +249,6 @@ class AetherXPreferences(private val context: Context) {
         }
     }
 
-    /**
-     * Mengambil ID pengguna lokal yang tersimpan, atau membuatnya sekali kalau
-     * belum ada (angka acak 1..99999, ditampilkan sebagai "ID-<angka>"). Ini
-     * dipakai sebagai fallback sementara saat perangkat offline — begitu ada
-     * koneksi, [UserIdRepository] akan menggantinya dengan ID urut asli dari
-     * Firestore lewat [setSyncedUserId].
-     */
-    suspend fun getOrCreateUserId(): Int {
-        val existing = context.dataStore.data.first()[Keys.USER_ID]
-        if (existing != null) return existing
-
-        val generated = Random.nextInt(1, 100_000)
-        context.dataStore.edit { prefs -> prefs[Keys.USER_ID] = generated }
-        return generated
-    }
-
     /** ID urut asli hasil alokasi Firestore, kalau sudah pernah berhasil disinkronkan. */
     suspend fun getSyncedUserId(): Int? {
         val prefs = context.dataStore.data.first()
@@ -263,6 +260,22 @@ class AetherXPreferences(private val context: Context) {
         context.dataStore.edit { prefs ->
             prefs[Keys.USER_ID] = id
             prefs[Keys.USER_ID_SYNCED] = true
+        }
+    }
+
+    /** Menyimpan cache lokal hasil validasi lisensi Firestore yang berhasil. */
+    suspend fun setLicenseCache(key: String, expiresAtMillis: Long) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.LICENSE_KEY] = key
+            prefs[Keys.LICENSE_EXPIRES_AT_MILLIS] = expiresAtMillis
+        }
+    }
+
+    /** Menghapus cache lisensi lokal — dipanggil kalau lisensi terbukti expired/revoked. */
+    suspend fun clearLicenseCache() {
+        context.dataStore.edit { prefs ->
+            prefs.remove(Keys.LICENSE_KEY)
+            prefs.remove(Keys.LICENSE_EXPIRES_AT_MILLIS)
         }
     }
 }

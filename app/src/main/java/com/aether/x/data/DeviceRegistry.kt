@@ -1,8 +1,6 @@
 package com.aether.x.data
 
-import android.annotation.SuppressLint
 import android.content.Context
-import android.provider.Settings
 import android.util.Log
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -41,9 +39,7 @@ class DeviceRegistry(private val context: Context) {
     }
 
     val deviceId: String
-        @SuppressLint("HardwareIds")
-        get() = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
-            ?: "unknown"
+        get() = DeviceId.read(context)
 
     /**
      * Menulis/memperbarui dokumen perangkat ini di Firestore. Dipanggil sekali
