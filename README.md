@@ -1,109 +1,83 @@
-# AetherX 🎮
+# AetherX License Bot (Telegram)
 
-**Pelicin Layar untuk Free Fire** — optimalkan sensitivitas sentuhan, DPI, resolusi, dan refresh rate tanpa perlu komputer.
+Bot Telegram untuk kelola lisensi AetherX: generate, edit, hapus, cek device ID — terhubung langsung ke Redis Upstash yang sama dengan license platform (`promoted-seal-66351`).
 
----
+## Format Token
 
-## Fitur
+Token lisensi: **7 karakter acak**, campuran huruf besar, huruf kecil, dan angka.
+Contoh: `aB3xK9m`, `Qz7vTp2`
 
-| Fitur | Keterangan |
-|---|---|
-| **Kecepatan Pointer** | Atur sensitivitas sentuh sistem (`settings put system pointer_speed`) |
-| **Touch Sensitivity Boost** | Toggle eksperimental untuk perangkat yang mendukung |
-| **DPI / Screen Density** | Turunkan DPI agar sentuhan lebih presisi (`wm density`) |
-| **Resolusi Layar** | Ubah lebar resolusi render (`wm size`) |
-| **Refresh Rate Maksimal** | Kunci layar ke refresh rate tertinggi perangkat |
-| **Reset** | Kembalikan semua pengaturan ke nilai pabrik |
-| **Dynamic Color** | Warna otomatis ambil palet dari wallpaper (Android 12+) |
+Karakter ambigu (`0/O`, `1/l/I`) sengaja dibuang biar gampang dibaca & diketik ulang oleh pembeli.
 
----
+## Setup
 
-## Persyaratan Akses
+1. Install dependency:
+   ```bash
+   npm install
+   ```
 
-AetherX menggunakan salah satu dari dua backend:
+2. Salin `.env.example` jadi `.env`, lalu isi:
+   ```env
+   TELEGRAM_BOT_TOKEN=8699927303:AAEiiP_JLYwyiEMaXlQNzowB_07w0MDlUks
+   ADMIN_TELEGRAM_ID=123456789
+   UPSTASH_REDIS_REST_URL=https://promoted-seal-66351.upstash.io
+   UPSTASH_REDIS_REST_TOKEN=isi_token_upstash_kamu
+   ```
 
-- **Shizuku** — untuk HP *tidak di-root*. Aktifkan lewat Wireless Debugging di menu Developer Options, lalu buka aplikasi [Shizuku](https://play.google.com/store/apps/details?id=moe.shizuku.privileged.api) dan jalankan service-nya.
-- **Root** — untuk HP yang sudah di-root dengan **Magisk**, **KernelSU**, atau **APatch**. Cukup setujui permintaan superuser saat pertama kali muncul.
+   - `ADMIN_TELEGRAM_ID`: Telegram user ID kamu (angka). Cara dapat: chat `/start` ke **@userinfobot**.
+   - `UPSTASH_REDIS_REST_TOKEN`: ambil dari dashboard Upstash Redis kamu (yang sama dipakai license platform Vercel). **Jangan** commit token ini ke git.
 
----
+3. Jalankan bot:
+   ```bash
+   npm start
+   ```
 
-## Build
+   Bot pakai **polling** (bukan webhook), jadi tinggal jalan di Termux, VPS, atau PC — asal proses tetap hidup. Untuk keep-alive di VPS bisa pakai `pm2`:
+   ```bash
+   npm install -g pm2
+   pm2 start bot.js --name aetherx-license-bot
+   pm2 save
+   ```
 
-### Prasyarat
+## Perintah Bot
 
-- Android Studio Hedgehog (2023.1.1) atau lebih baru
-- JDK 17
-- Android SDK 35
+Semua perintah bisa dipakai lewat command langsung (`/generate ...`) atau lewat tombol menu `/start`.
 
-### Langkah
+| Perintah | Akses | Keterangan |
+|---|---|---|
+| `/start` | semua | Tampilkan menu utama |
+| `/help` | semua | Daftar perintah |
+| `/generate [plan] [maxDevices] [hariBerlaku]` | admin | Buat lisensi baru. Contoh: `/generate lifetime 1 0` atau `/generate monthly 2 30` |
+| `/check <token>` | semua | Lihat detail lisensi |
+| `/edit <token>` | admin | Edit status, plan, maxDevices, expiry, device ID, atau catatan (flow interaktif via tombol) |
+| `/delete <token>` | admin | Hapus lisensi permanen (minta konfirmasi) |
+| `/device <deviceId>` | semua | Cari lisensi yang terpasang di device ID tsb |
+| `/unbind <token>` | admin | Lepas device dari lisensi, supaya bisa dipakai di device lain |
+| `/list` | admin | Daftar semua token lisensi (maks 50 ditampilkan) |
+| `/stats` | admin | Jumlah total lisensi tersimpan |
+| `/cancel` | semua | Batalkan proses multi-langkah yang sedang berjalan |
 
-```bash
-# 1. Clone repo
-git clone https://github.com/aetherdev01/AetherX.git
-cd AetherX
+## Struktur Data di Redis
 
-# 2. Buat file signing (lihat local.properties.example)
-cp local.properties.example local.properties
-# → isi STORE_FILE, STORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD
-
-# 3. Build
-./gradlew assembleRelease
-# APK ada di: app/build/outputs/apk/release/
-```
-
-### CI (GitHub Actions)
-
-Build otomatis berjalan di setiap push ke `main`. Diperlukan secrets:
-
-| Secret | Isi |
-|---|---|
-| `KEYSTORE_BASE64` | Keystore di-encode Base64 (`base64 aetherx.jks`) |
-| `STORE_PASSWORD` | Password keystore |
-| `KEY_ALIAS` | Alias key |
-| `KEY_PASSWORD` | Password key |
-| `TELEGRAM_BOT_TOKEN` | Token bot Telegram untuk notifikasi |
-| `TELEGRAM_CHAT_ID` | Chat ID tujuan notifikasi |
-
----
-
-## Arsitektur
+Setiap lisensi disimpan sebagai **Hash** di key `license:<token>`:
 
 ```
-com.aether.x
-├── core/
-│   ├── display/        ← Baca info layar (resolusi, DPI, refresh rate)
-│   ├── permission/     ← PrivilegeManager (Shizuku + root status & request)
-│   └── shell/          ← ShellExecutor interface + Shizuku & Root implementasi
-├── data/
-│   ├── AetherXPreferences.kt  ← DataStore (onboarding, tema, nilai tweak)
-│   └── TweakRepository.kt     ← Perintah shell per fitur tweak
-└── ui/
-    ├── components/     ← SectionCard, TweakSlider, TweakSwitch, StatusPill, dll
-    ├── main/           ← MainScreen (bottom nav host)
-    ├── navigation/     ← Route constants + NavHost
-    ├── onboarding/     ← PermissionSetupScreen, GuideScreen
-    ├── settings/       ← SettingsScreen + ViewModel
-    ├── theme/          ← AetherXTheme (M3 + dynamic color)
-    └── tweak/          ← TweakScreen + TweakViewModel
+{
+  token, status (active|suspended|revoked),
+  deviceId, maxDevices, plan, note,
+  createdAt, expiresAt, activatedAt
+}
 ```
 
----
+Index tambahan:
+- `license:all` — Set berisi semua token yang pernah dibuat (dipakai untuk `/list`, `/stats`)
+- `license:by-device:<deviceId>` — Set token yang terkait device tsb (dipakai untuk `/device`)
 
-## Perizinan
+Skema ini **kompatibel** untuk dibaca langsung dari backend Next.js license platform kamu — tinggal pakai `hgetall("license:<token>")` di endpoint checkout/validasi.
 
-Semua perintah yang dijalankan AetherX adalah perintah **Android resmi** yang sama persis dengan yang bisa dieksekusi lewat `adb shell`:
+## Keamanan
 
-```bash
-wm density <dpi>          # ubah DPI
-wm size <width>x<height>  # ubah resolusi
-settings put system pointer_speed <-7..7>
-settings put system peak_refresh_rate <hz>
-```
-
-Tidak ada modifikasi kernel, tidak ada akses ke partisi sistem, dan setiap perubahan bisa dikembalikan sepenuhnya lewat tombol **Reset** di tab Tweak.
-
----
-
-## Lisensi
-
-MIT License — bebas digunakan dan dimodifikasi.
+- Hanya `ADMIN_TELEGRAM_ID` yang bisa generate/edit/hapus/unbind lisensi.
+- User biasa tetap bisa `/check` dan `/device` untuk keperluan support (lihat status lisensi sendiri) — kalau mau ini juga dikunci ke admin saja, tinggal tambahkan `requireAdmin(msg)` di handler `/check` dan `/device`.
+- **Jangan** commit file `.env` ke git atau sertakan di zip yang dibagikan.
+- Token bot Telegram yang kamu berikan sudah tertanam sebagai contoh di `.env.example` — sebaiknya tetap pindahkan ke `.env` asli dan jangan publikasikan repo ini secara publik apa adanya.

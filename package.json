@@ -1,0 +1,17 @@
+{
+  "name": "aether-license-bot",
+  "version": "1.0.0",
+  "description": "Bot Telegram untuk manajemen lisensi AetherX (generate, edit, hapus, cek device ID)",
+  "main": "bot.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@upstash/redis": "^1.34.3",
+    "dotenv": "^16.4.5",
+    "node-telegram-bot-api": "^0.66.0"
+  }
+}
