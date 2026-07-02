@@ -20,22 +20,34 @@ service cloud.firestore {
       // Dibuka untuk `get` supaya UserIdRepository bisa memulihkan `userId`
       // yang sudah pernah dialokasikan untuk device ini saat app di-uninstall
       // lalu dipasang ulang (preferensi lokal hilang, tapi dokumen device di
-      // Firestore tetap ada, dikunci ke ANDROID_ID sebagai document ID).
+      // Firestore tetap ada, dikunci ke ANDROID_ID sebagai document ID), dan
+      // supaya LicenseRepository/MembershipViewModel bisa menampilkan status
+      // lisensi device ini kalau diperlukan.
+      //
+      // Sejak dokumen ini juga menyimpan `licenseActive`/`licenseExpiresAt`
+      // (lihat UserIdRepository & LicenseRepository), dokumen `devices/{id}`
+      // adalah SATU sumber kebenaran ringkasan per-device: siapa (userId),
+      // device mana (deviceId), dan status lisensinya — semua kebaca sekaligus
+      // dari satu dokumen di Firebase Console, tidak perlu gabung dua koleksi.
       //
       // CATATAN KEAMANAN: karena app ini tidak pakai Firebase Auth, rules
       // tidak punya cara memverifikasi "pemanggil get ini benar pemilik
       // ANDROID_ID tsb" — siapa pun yang tahu/menebak sebuah deviceId bisa
-      // ikut membaca dokumennya (isinya cuma timestamp login & nomor urut
-      // userId, bukan data sensitif). Kalau ke depan butuh proteksi lebih
-      // ketat, tambahkan Firebase Auth anonim dan ganti kondisi ini jadi
-      // `request.auth != null && request.auth.uid == deviceId` atau serupa.
+      // ikut membaca dokumennya (isinya timestamp login, nomor urut userId,
+      // dan status aktif/tidaknya lisensi — bukan kode lisensi itu sendiri,
+      // yang tetap hanya ada di koleksi `licenses`). Kalau ke depan butuh
+      // proteksi lebih ketat, tambahkan Firebase Auth anonim dan ganti
+      // kondisi ini jadi `request.auth != null && request.auth.uid == deviceId`.
       allow get: if true;
 
-      // Dokumen baru: field wajib ada, deviceId di data harus cocok dengan
-      // document ID (mencegah orang menulis ke devices/A tapi isi field
-      // deviceId-nya "B"), dan firstLoginAt/lastLoginAt harus benar-benar
-      // timestamp server saat request diterima (bukan tanggal sembarangan
-      // yang dikirim manual dari client).
+      // Dokumen baru: field identitas wajib ada dan valid, deviceId di data
+      // harus cocok dengan document ID (mencegah orang menulis ke devices/A
+      // tapi isi field deviceId-nya "B"), dan firstLoginAt/lastLoginAt harus
+      // benar-benar timestamp server saat request diterima (bukan tanggal
+      // sembarangan yang dikirim manual dari client). `licenseActive` dan
+      // `licenseExpiresAt` opsional saat create (device baru belum tentu
+      // langsung punya lisensi) — makanya tidak divalidasi tipenya di sini,
+      // hanya dibatasi lewat rule `update` di bawah kalau field itu diisi.
       allow create: if request.resource.data.deviceId == deviceId
         && request.resource.data.firstLoginAt == request.time
         && request.resource.data.lastLoginAt == request.time
@@ -43,7 +55,10 @@ service cloud.firestore {
 
       // Update: deviceId dan firstLoginAt tidak boleh berubah sama sekali
       // (mencegah orang menimpa ulang catatan "login pertama"-nya sendiri).
-      // Hanya lastLoginAt (harus == request.time) dan userId yang boleh berubah.
+      // lastLoginAt (harus == request.time), userId, licenseActive, dan
+      // licenseExpiresAt boleh berubah — dua field terakhir inilah yang
+      // dipakai LicenseRepository untuk mencatat status lisensi device ini
+      // setiap kali aktivasi berhasil/berubah.
       allow update: if request.resource.data.deviceId == resource.data.deviceId
         && request.resource.data.firstLoginAt == resource.data.firstLoginAt
         && request.resource.data.lastLoginAt == request.time;

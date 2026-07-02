@@ -12,7 +12,7 @@ import com.aether.x.core.permission.PrivilegeManager
 import com.aether.x.core.shell.ShellExecutor
 import com.aether.x.core.shell.ShellResult
 import com.aether.x.data.AetherXPreferences
-import com.aether.x.data.DeviceRegistry
+import com.aether.x.data.DeviceId
 import com.aether.x.data.TweakRepository
 import com.aether.x.data.UserIdRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,8 +47,7 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = TweakRepository()
     private val preferences = AetherXPreferences(application)
-    private val deviceRegistry = DeviceRegistry(application)
-    private val userIdRepository = UserIdRepository(preferences, deviceRegistry.deviceId)
+    private val userIdRepository = UserIdRepository(preferences, DeviceId.read(application))
 
     private val _state = MutableStateFlow(TweakUiState())
     val state: StateFlow<TweakUiState> = _state.asStateFlow()
@@ -86,11 +85,12 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
         // otomatis tidak ditampilkan (lihat TweakHeader) sampai berhasil di
         // percobaan berikutnya.
         //
-        // Sekalian mendata perangkat ini ke koleksi `devices` di Firestore
-        // (deviceId = ANDROID_ID, firstLoginAt, lastLoginAt) — best-effort,
-        // tidak memblokir UI kalau gagal/offline. Hanya dipanggil kalau `id`
-        // berhasil didapat, karena Firestore rules mewajibkan field `userId`
-        // ada di setiap dokumen device.
+        // Pendataan perangkat ke koleksi `devices` (deviceId, firstLoginAt,
+        // lastLoginAt, userId) sudah dilakukan SEKALIGUS di dalam transaksi
+        // atomik yang sama oleh UserIdRepository.resolveUserId() — tidak
+        // perlu panggilan terpisah lagi di sini (sebelumnya ini dua langkah
+        // terpisah yang berisiko: kalau langkah kedua gagal, counter global
+        // sudah kadung naik tapi device tidak pernah tercatat).
         resolveAndRecordUserId()
     }
 
@@ -102,9 +102,6 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val id = userIdRepository.resolveUserId()
             _state.update { it.copy(userId = id) }
-            if (id != null) {
-                deviceRegistry.recordDeviceLogin(userId = id)
-            }
         }
     }
 

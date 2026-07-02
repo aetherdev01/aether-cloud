@@ -1,6 +1,8 @@
 package com.aether.x.data
 
 import android.content.Context
+import android.util.Log
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
@@ -56,6 +58,7 @@ class LicenseRepository(private val context: Context) {
 
     private val firestore by lazy { FirebaseFirestore.getInstance() }
     private val deviceId: String get() = DeviceId.read(context)
+    private val deviceRef by lazy { firestore.collection("devices").document(deviceId) }
 
     private companion object {
         const val COLLECTION = "licenses"
@@ -73,12 +76,25 @@ class LicenseRepository(private val context: Context) {
         val trimmedKey = key.trim()
         if (trimmedKey.isEmpty()) return LicenseResult.NotFound
 
-        return runCatching { activateTransaction(trimmedKey) }
+        val result = runCatching { activateTransaction(trimmedKey) }
             .getOrElse { e ->
-                if (e is LicenseSignal) return e.result
-                if (e is FirebaseFirestoreException) return LicenseResult.NetworkError
+                if (e is LicenseSignal) return@getOrElse e.result
+                if (e is FirebaseFirestoreException) return@getOrElse LicenseResult.NetworkError
                 LicenseResult.NetworkError
             }
+
+        // Catat status lisensi ke devices/{deviceId} — best-effort, terpisah
+        // dari transaksi licenses/{key} di atas (dua collection berbeda,
+        // masing-masing dengan rules sendiri, sengaja TIDAK digabung jadi
+        // satu transaksi supaya kegagalan di sini tidak pernah membuat
+        // aktivasi lisensi yang sudah sukses jadi ikut gagal/rollback).
+        // Kalau ini gagal (mis. offline), status lisensi di device masih
+        // benar lewat cache lokal (AetherXPreferences) — dokumen `devices`
+        // hanya ringkasan tambahan untuk memudahkan admin lihat di Console.
+        if (result is LicenseResult.Valid) {
+            recordLicenseStatus(active = true, expiresAtMillis = result.expiresAtMillis)
+        }
+        return result
     }
 
     /**
@@ -88,11 +104,59 @@ class LicenseRepository(private val context: Context) {
      * diperbarui admin, atau di-revoke).
      */
     suspend fun revalidate(key: String): LicenseResult {
-        return runCatching { fetchAndCheck(key) }
+        val result = runCatching { fetchAndCheck(key) }
             .getOrElse { e ->
-                if (e is LicenseSignal) return e.result
+                if (e is LicenseSignal) return@getOrElse e.result
                 LicenseResult.NetworkError
             }
+
+        // Sinkronkan devices/{deviceId} kalau statusnya berubah sejak
+        // terakhir dicek (mis. admin revoke lisensi lewat bot Telegram, atau
+        // lisensi kadaluarsa) — supaya dokumen devices tidak menampilkan
+        // "aktif" yang sudah basi.
+        when (result) {
+            is LicenseResult.Valid -> recordLicenseStatus(active = true, expiresAtMillis = result.expiresAtMillis)
+            is LicenseResult.Expired,
+            LicenseResult.Revoked,
+            LicenseResult.BoundToOtherDevice,
+            LicenseResult.NotFound -> recordLicenseStatus(active = false, expiresAtMillis = null)
+            LicenseResult.NetworkError -> Unit // offline: jangan timpa status terakhir yang diketahui
+        }
+        return result
+    }
+
+    /**
+     * Menulis ringkasan status lisensi ke `devices/{deviceId}` (field
+     * `licenseActive`, `licenseExpiresAt`) supaya admin bisa langsung lihat
+     * status lisensi tiap device dari satu dokumen di Firebase Console,
+     * tanpa perlu query silang ke koleksi `licenses`. Best-effort: kegagalan
+     * di sini dicatat ke Logcat tapi tidak pernah dilempar sebagai error ke
+     * pemanggil (lihat KDoc [activate]).
+     *
+     * Sengaja hanya memakai `update` (bukan `set(merge=true)`): dokumen
+     * `devices/{deviceId}` seharusnya sudah dibuat lebih dulu oleh
+     * [UserIdRepository] (yang mengisi field wajib `deviceId`/`firstLoginAt`/
+     * `userId` sesuai firestore.rules). Kalau dokumennya belum ada sama
+     * sekali (mis. pengguna buka tab Membership sebelum tab Tweak sempat
+     * jalan), `update` akan gagal dengan NOT_FOUND — itu di-log lalu
+     * dilewati begitu saja, bukan mencoba `set` tanpa field wajib yang pasti
+     * ditolak rules juga.
+     */
+    private suspend fun recordLicenseStatus(active: Boolean, expiresAtMillis: Long?) {
+        runCatching {
+            suspendCancellableCoroutine<Unit> { cont ->
+                val data = mutableMapOf<String, Any?>(
+                    "licenseActive" to active,
+                    "licenseExpiresAt" to expiresAtMillis?.let { Timestamp(it / 1000, 0) },
+                    "lastLoginAt" to FieldValue.serverTimestamp(),
+                )
+                deviceRef.update(data)
+                    .addOnSuccessListener { if (cont.isActive) cont.resume(Unit) }
+                    .addOnFailureListener { if (cont.isActive) cont.resume(Unit) }
+            }
+        }.onFailure { e ->
+            Log.w("LicenseRepository", "Gagal mencatat status lisensi ke devices/$deviceId", e)
+        }
     }
 
     /** Exception internal dipakai untuk keluar cepat dari transaction/fetch dengan hasil tertentu. */
