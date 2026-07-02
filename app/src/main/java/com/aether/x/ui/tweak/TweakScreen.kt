@@ -1,5 +1,6 @@
 package com.aether.x.ui.tweak
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -60,7 +61,13 @@ fun TweakScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) viewModel.refreshDetectedGames()
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refreshDetectedGames()
+                // Coba lagi alokasi ID pengguna kalau sebelumnya gagal (mis.
+                // dibuka pertama kali sebelum jaringan siap) — lihat catatan
+                // di TweakViewModel.retryResolveUserIdIfMissing().
+                viewModel.retryResolveUserIdIfMissing()
+            }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
     }
@@ -80,7 +87,7 @@ fun TweakScreen(
                 .padding(horizontal = 20.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            TweakHeader(userId = state.userId)
+            TweakHeader(userId = state.userId, onRetryUserId = viewModel::retryResolveUserIdIfMissing)
 
             SectionCard(title = stringResource(R.string.tweak_section_touch)) {
                 // Nilai diterapkan langsung ke sistem saat slider dilepas (tidak perlu
@@ -188,9 +195,15 @@ fun TweakScreen(
  * Header "hero" di puncak halaman Tweak: judul, subjudul singkat, dan pill ID
  * pengguna lokal (mis. "ID-67128") di kanan atas — menggantikan pill status
  * Shizuku/Root yang dipakai sebelumnya.
+ *
+ * Kalau [userId] masih null (alokasi dari Firestore belum/gagal), pill TIDAK
+ * disembunyikan total lagi seperti sebelumnya (yang bikin terkesan "hilang"
+ * atau error tanpa penjelasan) — sekarang tampil pill "Menyambungkan…" yang
+ * bisa diketuk untuk mencoba ulang secara manual lewat [onRetryUserId],
+ * selain otomatis dicoba ulang tiap kali layar ini kembali aktif.
  */
 @Composable
-private fun TweakHeader(userId: Int?) {
+private fun TweakHeader(userId: Int?, onRetryUserId: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -215,6 +228,14 @@ private fun TweakHeader(userId: Int?) {
                 containerColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.primary,
                 dotColor = MaterialTheme.colorScheme.primary,
+            )
+        } else {
+            StatusPill(
+                text = stringResource(R.string.tweak_user_id_pending),
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                dotColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.clickable(onClick = onRetryUserId),
             )
         }
     }

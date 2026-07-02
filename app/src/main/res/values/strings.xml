@@ -85,6 +85,8 @@
     <string name="membership_badge_expired">Kedaluwarsa</string>
     <string name="membership_key_placeholder">Kode lisensi (bebas huruf/angka)</string>
     <string name="membership_key_label">Kode Lisensi</string>
+    <string name="membership_key_show_cd">Tampilkan kode lisensi</string>
+    <string name="membership_key_hide_cd">Sembunyikan kode lisensi</string>
     <string name="membership_benefits_title">Keuntungan Membership</string>
     <string name="membership_benefit_1">Akses penuh ke semua tweak kernel-level (Root)</string>
     <string name="membership_benefit_2">Update fitur lebih awal dibanding versi gratis</string>
@@ -92,6 +94,7 @@
 
     <!-- Tweak screen -->
     <string name="tweak_user_id_format">ID-%1$d</string>
+    <string name="tweak_user_id_pending">Menyambungkan…</string>
     <string name="tweak_subtitle">Kontrol parameter sistem &amp; kernel perangkatmu secara langsung. Perubahan aktif seketika.</string>
     <string name="tweak_section_touch">Input Driver</string>
     <string name="tweak_pointer_speed">Pointer Speed</string>

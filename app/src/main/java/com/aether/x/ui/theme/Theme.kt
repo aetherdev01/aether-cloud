@@ -1,6 +1,5 @@
 package com.aether.x.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
@@ -71,7 +70,14 @@ private val AetherXShapes = Shapes(
  */
 @Composable
 fun AetherXTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    // Tema bawaan aplikasi SELALU gelap, apa pun setelan sistem (light/dark)
+    // di HP pengguna — sebelumnya memakai isSystemInDarkTheme(), jadi kalau
+    // HP disetel mode terang, aplikasi ikut terbuka terang meski seluruh
+    // desain (warna, kontras, ikon) dibuat untuk skema gelap. Parameter
+    // darkTheme tetap ada (dipertahankan default true) supaya masih bisa
+    // dioverride manual dari pemanggil kalau suatu saat mau ditambah toggle
+    // tema di halaman Pengaturan.
+    darkTheme: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val colorScheme = if (darkTheme) AetherXDarkScheme else AetherXLightScheme

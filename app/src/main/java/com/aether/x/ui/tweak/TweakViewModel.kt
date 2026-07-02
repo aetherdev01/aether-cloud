@@ -91,6 +91,14 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
         // tidak memblokir UI kalau gagal/offline. Hanya dipanggil kalau `id`
         // berhasil didapat, karena Firestore rules mewajibkan field `userId`
         // ada di setiap dokumen device.
+        resolveAndRecordUserId()
+    }
+
+    private fun resolveAndRecordUserId() {
+        // Kalau ID sudah ada di state (mis. percobaan sebelumnya berhasil),
+        // tidak perlu ke jaringan lagi.
+        if (_state.value.userId != null) return
+
         viewModelScope.launch {
             val id = userIdRepository.resolveUserId()
             _state.update { it.copy(userId = id) }
@@ -98,6 +106,19 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
                 deviceRegistry.recordDeviceLogin(userId = id)
             }
         }
+    }
+
+    /**
+     * Dipanggil ulang setiap kali layar Tweak kembali aktif (ON_RESUME) DAN
+     * saat pengguna mengetuk pill ID secara manual. Sebelumnya alokasi ID
+     * hanya dicoba sekali saat ViewModel pertama dibuat — kalau percobaan
+     * itu gagal total (mis. dibuka pertama kali saat jaringan belum siap),
+     * badge "ID-…" akan tetap kosong selamanya sampai app di-restart penuh
+     * (ViewModel baru). Dengan retry di resume/tap, badge akan otomatis
+     * terisi begitu jaringan tersedia, tanpa perlu restart aplikasi.
+     */
+    fun retryResolveUserIdIfMissing() {
+        resolveAndRecordUserId()
     }
 
     /** Dipanggil ulang saat layar kembali aktif, untuk menangkap kalau game baru dipasang/dihapus. */
