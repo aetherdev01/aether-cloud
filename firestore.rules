@@ -17,8 +17,19 @@ service cloud.firestore {
     }
 
     match /devices/{deviceId} {
-      // Tidak ada alasan client perlu baca data device orang lain.
-      allow get: if false;
+      // Dibuka untuk `get` supaya UserIdRepository bisa memulihkan `userId`
+      // yang sudah pernah dialokasikan untuk device ini saat app di-uninstall
+      // lalu dipasang ulang (preferensi lokal hilang, tapi dokumen device di
+      // Firestore tetap ada, dikunci ke ANDROID_ID sebagai document ID).
+      //
+      // CATATAN KEAMANAN: karena app ini tidak pakai Firebase Auth, rules
+      // tidak punya cara memverifikasi "pemanggil get ini benar pemilik
+      // ANDROID_ID tsb" — siapa pun yang tahu/menebak sebuah deviceId bisa
+      // ikut membaca dokumennya (isinya cuma timestamp login & nomor urut
+      // userId, bukan data sensitif). Kalau ke depan butuh proteksi lebih
+      // ketat, tambahkan Firebase Auth anonim dan ganti kondisi ini jadi
+      // `request.auth != null && request.auth.uid == deviceId` atau serupa.
+      allow get: if true;
 
       // Dokumen baru: field wajib ada, deviceId di data harus cocok dengan
       // document ID (mencegah orang menulis ke devices/A tapi isi field

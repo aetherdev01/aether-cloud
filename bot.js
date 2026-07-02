@@ -37,6 +37,40 @@ try {
   process.exit(1);
 }
 
+// ── Jaga-jaga: pastikan serviceAccountKey.json ini benar-benar milik
+// project Firebase yang SAMA dengan yang dipakai aplikasi Android
+// (app/google-services.json), bukan project lain / key dari akun lain.
+//
+// Kalau ini beda project, bot akan tetap bisa generate lisensi TANPA error
+// sama sekali (REST call ke Firestore-nya sukses 200 OK) — cuma dokumennya
+// nyasar ke project yang salah, jadi app tidak akan pernah menemukan kode
+// itu. Ini persis gejala "bot bilang berhasil tapi kode 'tidak ditemukan'
+// di app" yang sebelumnya sulit dilacak karena tidak ada pesan error.
+//
+// Isi EXPECTED_PROJECT_ID di .env untuk mengaktifkan pengecekan ini (ambil
+// dari project_id di app/google-services.json project Android-mu). Kalau
+// tidak diisi, pengecekan dilewati (biar tidak memaksa breaking change buat
+// yang belum sempat set .env).
+const EXPECTED_PROJECT_ID = process.env.EXPECTED_PROJECT_ID;
+if (EXPECTED_PROJECT_ID && firestore.projectId !== EXPECTED_PROJECT_ID) {
+  console.error(
+    `❌ serviceAccountKey.json ini untuk project Firebase "${firestore.projectId}", ` +
+      `tapi EXPECTED_PROJECT_ID di .env diisi "${EXPECTED_PROJECT_ID}".\n` +
+      `   Lisensi yang dibuat bot ini TIDAK akan terlihat di aplikasi Android kalau project-nya beda.\n` +
+      `   Ambil ulang serviceAccountKey.json dari Firebase Console -> project "${EXPECTED_PROJECT_ID}" ` +
+      `-> Project Settings -> Service accounts -> Generate new private key.`
+  );
+  process.exit(1);
+}
+if (!EXPECTED_PROJECT_ID) {
+  console.warn(
+    `⚠️  EXPECTED_PROJECT_ID belum diisi di .env — pengecekan project Firestore dilewati.\n` +
+      `   Bot ini akan menulis ke project "${firestore.projectId}" (dari serviceAccountKey.json).\n` +
+      `   Pastikan ini SAMA PERSIS dengan project_id di app/google-services.json aplikasi Android-mu,\n` +
+      `   kalau tidak, lisensi yang dibuat bot tidak akan pernah terbaca di app.`
+  );
+}
+
 const bot = new TelegramBot(TOKEN, { polling: true });
 
 // ── State percakapan sederhana per chat ──

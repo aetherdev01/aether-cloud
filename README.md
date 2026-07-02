@@ -58,8 +58,20 @@ akan langsung bisa dipakai di aplikasi Android tanpa perlu ubah apa pun di app.
    TELEGRAM_BOT_TOKEN=8699927303:AAEiiP_JLYwyiEMaXlQNzowB_07w0MDlUks
    ADMIN_TELEGRAM_ID=123456789
    SERVICE_ACCOUNT_PATH=./serviceAccountKey.json
+   EXPECTED_PROJECT_ID=aether-cloud-df1ca
    ```
    `ADMIN_TELEGRAM_ID`: chat `/start` ke **@userinfobot** buat dapetin ID kamu.
+
+   `EXPECTED_PROJECT_ID`: **sangat disarankan diisi.** Ini harus persis sama
+   dengan `project_id` di `app/google-services.json` aplikasi Android-mu
+   (buka file itu, cari field `"project_id"` di dalam `"project_info"`).
+   Kalau `serviceAccountKey.json` yang kamu pakai ternyata untuk project
+   Firebase yang BEDA, bot akan menolak jalan dan kasih pesan error jelas —
+   dibanding sebelumnya, di mana bot tetap bilang "✅ berhasil dibuat" padahal
+   kodenya nyasar ke project lain dan tidak akan pernah ditemukan aplikasi
+   Android (`"❌ Kode tidak ditemukan"`). Kalau kamu pernah mengalami gejala
+   itu, ini kemungkinan besar penyebabnya — generate ulang
+   `serviceAccountKey.json` dari project Firebase yang benar.
 
 4. Jalankan:
    ```bash

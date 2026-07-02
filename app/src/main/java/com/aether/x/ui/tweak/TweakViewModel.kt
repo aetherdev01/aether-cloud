@@ -47,8 +47,8 @@ class TweakViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = TweakRepository()
     private val preferences = AetherXPreferences(application)
-    private val userIdRepository = UserIdRepository(preferences)
     private val deviceRegistry = DeviceRegistry(application)
+    private val userIdRepository = UserIdRepository(preferences, deviceRegistry.deviceId)
 
     private val _state = MutableStateFlow(TweakUiState())
     val state: StateFlow<TweakUiState> = _state.asStateFlow()

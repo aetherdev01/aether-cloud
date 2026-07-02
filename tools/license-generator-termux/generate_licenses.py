@@ -233,6 +233,26 @@ def main():
     else:
         service_account = load_service_account()
         project_id = service_account["project_id"]
+
+        expected_project_id = os.environ.get("EXPECTED_PROJECT_ID")
+        if expected_project_id and project_id != expected_project_id:
+            print(
+                f"serviceAccountKey.json ini untuk project Firebase \"{project_id}\", "
+                f"tapi EXPECTED_PROJECT_ID diisi \"{expected_project_id}\".\n"
+                "Kode lisensi yang dibuat TIDAK akan terlihat di aplikasi Android kalau "
+                "project-nya beda. Ambil ulang serviceAccountKey.json dari project yang benar, "
+                "atau jalankan dengan `EXPECTED_PROJECT_ID=... python3 generate_licenses.py ...`.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        if not expected_project_id:
+            print(
+                f"Peringatan: EXPECTED_PROJECT_ID belum di-set — kode akan ditulis ke project "
+                f"\"{project_id}\" tanpa verifikasi. Pastikan ini project Firebase yang sama "
+                "dengan project_id di app/google-services.json aplikasi Android-mu.\n",
+                file=sys.stderr,
+            )
+
         print("Mengambil access token dari Google OAuth2...")
         access_token = get_access_token(service_account)
         print("Access token diperoleh. Menulis dokumen ke Firestore...\n")

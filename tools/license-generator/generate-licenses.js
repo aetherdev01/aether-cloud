@@ -111,8 +111,33 @@ async function main() {
   if (args.dryRun) {
     codeList.forEach((code) => console.log(code));
   } else {
+    const serviceAccount = require(keyPath);
+
+    // Jaga-jaga: pastikan key ini benar-benar untuk project Firebase yang
+    // sama dengan aplikasi Android (app/google-services.json). Kalau beda,
+    // batch write ini akan SUKSES tanpa error tapi kodenya nyasar ke
+    // project lain — app tidak akan pernah menemukan kode itu. Isi
+    // EXPECTED_PROJECT_ID di environment untuk mengaktifkan pengecekan ini.
+    const expectedProjectId = process.env.EXPECTED_PROJECT_ID;
+    if (expectedProjectId && serviceAccount.project_id !== expectedProjectId) {
+      console.error(
+        `serviceAccountKey.json ini untuk project Firebase "${serviceAccount.project_id}", ` +
+        `tapi EXPECTED_PROJECT_ID diisi "${expectedProjectId}".\n` +
+        'Kode lisensi yang dibuat TIDAK akan terlihat di aplikasi Android kalau project-nya beda. ' +
+        'Ambil ulang serviceAccountKey.json dari project yang benar.',
+      );
+      process.exit(1);
+    }
+    if (!expectedProjectId) {
+      console.warn(
+        `Peringatan: EXPECTED_PROJECT_ID belum di-set — kode akan ditulis ke project ` +
+        `"${serviceAccount.project_id}" tanpa verifikasi. Pastikan ini project Firebase yang sama ` +
+        'dengan project_id di app/google-services.json aplikasi Android-mu.\n',
+      );
+    }
+
     admin.initializeApp({
-      credential: admin.credential.cert(require(keyPath)),
+      credential: admin.credential.cert(serviceAccount),
     });
     const db = admin.firestore();
 

@@ -1,5 +1,9 @@
 package com.aether.x.ui.membership
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,6 +43,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -56,11 +63,6 @@ import com.aether.x.ui.theme.AccentBlue
 import com.aether.x.ui.theme.AccentGreen
 import com.aether.x.ui.theme.AccentGreenContainer
 import com.aether.x.ui.theme.AccentRed
-import com.aether.x.ui.theme.StrokeSubtle
-import com.aether.x.ui.theme.SurfaceCardAlt
-import com.aether.x.ui.theme.TextMuted
-import com.aether.x.ui.theme.TextPrimary
-import com.aether.x.ui.theme.TextSecondary
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -102,7 +104,7 @@ fun MembershipScreen(
             Text(
                 text = stringResource(R.string.membership_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp),
             )
         }
@@ -121,7 +123,12 @@ fun MembershipScreen(
                     value = keyInput,
                     onValueChange = viewModel::setKeyInput,
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text(stringResource(R.string.membership_key_placeholder), color = TextMuted) },
+                    placeholder = {
+                        Text(
+                            stringResource(R.string.membership_key_placeholder),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    },
                     singleLine = true,
                     enabled = !isSubmitting,
                     // Format lisensi sekarang bebas: huruf besar/kecil dan angka apa
@@ -150,7 +157,7 @@ fun MembershipScreen(
                                         R.string.membership_key_show_cd
                                     },
                                 ),
-                                tint = TextMuted,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     },
@@ -158,9 +165,9 @@ fun MembershipScreen(
                     shape = RoundedCornerShape(14.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = AccentBlue,
-                        unfocusedBorderColor = StrokeSubtle,
-                        focusedTextColor = TextPrimary,
-                        unfocusedTextColor = TextPrimary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                         errorBorderColor = AccentRed,
                     ),
                 )
@@ -205,6 +212,87 @@ fun MembershipScreen(
                 BenefitRow(text = stringResource(R.string.membership_benefit_3))
             }
         }
+
+        MembershipProCard()
+    }
+}
+
+/**
+ * Kartu promo "Langganan Membership Pro": harga tetap Rp10.000 dan tombol
+ * yang membuka chat Telegram admin (bukan pembelian/aktivasi otomatis di
+ * dalam app — kode lisensi tetap diberikan manual oleh admin lewat bot
+ * setelah pembeli menghubungi lewat tautan ini, sesuai alur yang sudah ada
+ * di README bot Telegram).
+ */
+@Composable
+private fun MembershipProCard() {
+    val context = LocalContext.current
+    val telegramUrl = stringResource(R.string.membership_pro_telegram_url)
+
+    SectionCard(title = stringResource(R.string.membership_pro_title)) {
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.membership_pro_price),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = AccentBlue,
+                )
+                Text(
+                    text = stringResource(R.string.membership_pro_price_period),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 4.dp),
+                )
+            }
+
+            Text(
+                text = stringResource(R.string.membership_pro_description),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            Button(
+                onClick = {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(telegramUrl))
+                    try {
+                        context.startActivity(intent)
+                    } catch (e: ActivityNotFoundException) {
+                        // Tidak ada aplikasi/browser yang bisa menangani tautan Telegram —
+                        // abaikan dengan aman daripada membuat aplikasi crash. Pesan
+                        // membership_pro_telegram_error tersedia kalau nanti mau
+                        // ditampilkan lewat Snackbar/Toast di sini.
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF29A9EA),
+                    contentColor = Color.White,
+                ),
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_social_telegram),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(22.dp)
+                            .clip(CircleShape),
+                    )
+                    Text(
+                        text = stringResource(R.string.membership_pro_cta),
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -219,7 +307,7 @@ private fun MembershipHeroCard(status: MembershipUiStatus, expiresAtMillis: Long
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(SurfaceCardAlt)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -237,12 +325,12 @@ private fun MembershipHeroCard(status: MembershipUiStatus, expiresAtMillis: Long
                 text = statusHeadline(status),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
-                color = TextPrimary,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
                 text = statusSubtitle(status, expiresAtMillis),
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp),
             )
         }
@@ -279,7 +367,7 @@ private fun BenefitRow(text: String) {
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
-            color = TextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -296,7 +384,7 @@ private fun StatusBadge(status: MembershipUiStatus) {
         )
         MembershipUiStatus.INACTIVE -> StatusPill(
             text = stringResource(R.string.membership_badge_inactive),
-            dotColor = TextMuted,
+            dotColor = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         MembershipUiStatus.EXPIRED -> StatusPill(
             text = stringResource(R.string.membership_badge_expired),
